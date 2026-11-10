@@ -378,6 +378,7 @@
         const GITHUB_USERNAME = "tsr2725";
         const REPO_NAME = "ShoppingList";
         const FILE_PATH = "shopping.json";
+        const POLL_INTERVAL = 3000; // Check GitHub every 3 seconds for updates
 
         let PERSONAL_ACCESS_TOKEN = "";
 
@@ -403,9 +404,11 @@
         let showCompleted = false;
 
         let syncTimer = null;
+        let pollTimer = null;
         let isSyncing = false;
         let syncPending = false;
         let lastCommitMsg = "Update list";
+        let lastLocalActionTime = 0;
 
         function formatItemName(str) {
             if (!str) return "";
@@ -446,7 +449,58 @@
                 window.history.replaceState({}, document.title, window.location.pathname);
                 await addItem(rawItem);
             }
+
+            startPolling();
         };
+
+        // Real-time background sync polling
+        function startPolling() {
+            if (pollTimer) clearInterval(pollTimer);
+            pollTimer = setInterval(pollGitHub, POLL_INTERVAL);
+        }
+
+        function stopPolling() {
+            if (pollTimer) clearInterval(pollTimer);
+            pollTimer = null;
+        }
+
+        // Auto pause polling on tab blur to save battery/bandwidth
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                stopPolling();
+            } else {
+                pollGitHub();
+                startPolling();
+            }
+        });
+
+        async function pollGitHub() {
+            // Pause polling while local user updates are actively pushing or queued
+            if (isSyncing || syncPending || (Date.now() - lastLocalActionTime < 1500)) return;
+
+            try {
+                const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
+                    headers: { "Authorization": `Bearer ${PERSONAL_ACCESS_TOKEN}` }
+                });
+
+                if (getRes.status === 401) {
+                    handleAuthError();
+                    return;
+                }
+
+                if (getRes.ok) {
+                    const fileData = await getRes.json();
+                    if (fileData.sha !== currentSha) {
+                        currentSha = fileData.sha;
+                        const rawContent = decodeContent(fileData.content);
+                        currentItems = parseFileContent(rawContent);
+                        renderList();
+                    }
+                }
+            } catch (err) {
+                // Background poll network errors fail silently
+            }
+        }
 
         async function fetchListFromGitHub() {
             const statusDiv = document.getElementById('status');
@@ -499,6 +553,7 @@
 
         function scheduleSync(commitMessage = "Update list") {
             lastCommitMsg = commitMessage;
+            lastLocalActionTime = Date.now();
             const statusDiv = document.getElementById('status');
             statusDiv.innerText = "Pending sync...";
 
