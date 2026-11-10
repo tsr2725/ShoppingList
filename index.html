@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopping List</title>
+    <title>Shopping</title>
+    <!-- Include Html5-Qrcode scanner library from CDN -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -20,6 +22,7 @@
         .container {
             width: 100%;
             max-width: 480px;
+            padding-bottom: 80px;
         }
         h1 {
             font-size: 34px;
@@ -55,8 +58,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
-        /* Checkmark icon inside circle */
         .radio-circle::after {
             content: "";
             width: 6px;
@@ -70,7 +73,6 @@
             font-size: 18px;
             font-weight: 400;
             color: #000000;
-            flex-grow: item;
         }
         .status {
             text-align: center;
@@ -85,6 +87,76 @@
             padding: 20px 0;
             font-style: italic;
         }
+        /* Floating Action Button (matches screenshot + button) */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: #bfa15f;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 4px 16px rgba(191, 161, 95, 0.4);
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s;
+        }
+        .fab:active { transform: scale(0.95); }
+
+        /* Modal Overlay for Scanner / Manual Entry */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .modal-content h3 { margin-top: 0; color: #bfa15f; }
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            margin: 12px 0;
+            border: 1px solid #c7c7cc;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .modal-btn {
+            background-color: #bfa15f;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 8px;
+        }
+        .modal-btn.secondary {
+            background-color: #e5e5ea;
+            color: #1c1c1e;
+            margin-top: 10px;
+        }
+        #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -99,6 +171,21 @@
         <div id="status" class="status"></div>
     </div>
 
+    <!-- Floating Action Button (Scan / Add) -->
+    <button class="fab" onclick="openModal()">+</button>
+
+    <!-- Scanner / Manual Entry Modal -->
+    <div class="modal" id="scanModal">
+        <div class="modal-content">
+            <h3>Scan Another Product</h3>
+            <div id="reader"></div>
+            <p style="font-size: 14px; color: #8e8e93; margin: 10px 0;">— OR ENTER MANUALLY —</p>
+            <input type="text" id="manualInput" class="modal-input" placeholder="Enter product name (e.g. Bread)">
+            <button class="modal-btn" onclick="submitManualItem()">Add Product</button>
+            <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
     <script>
         // CONFIGURATION: Fill in your GitHub details here
         const GITHUB_USERNAME = "YOUR_GITHUB_USERNAME";
@@ -107,16 +194,17 @@
         const FILE_PATH = "shopping.txt";
 
         const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${FILE_PATH}`;
+        let html5QrCode = null;
 
         window.onload = async function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const rawItem = urlParams.get('item'); // e.g. ?item=apples
+            const rawItem = urlParams.get('item'); // e.g. ?item=apples or ?item=bread
             
             let newItem = rawItem ? rawItem.charAt(0).toUpperCase() + rawItem.slice(1).toLowerCase() : null;
             const statusDiv = document.getElementById('status');
 
             try {
-                statusDiv.innerText = newItem ? `Adding ${newItem} to list...` : "Loading list...";
+                statusDiv.innerText = newItem ? `Adding ${newItem} to list...` : "";
 
                 // 1. Fetch current contents from GitHub
                 const getRes = await fetch(apiUrl, {
@@ -130,11 +218,10 @@
                     const fileData = await getRes.json();
                     sha = fileData.sha;
                     const decoded = decodeURIComponent(escape(atob(fileData.content)));
-                    // Split lines into an array and filter out blank lines
                     currentItems = decoded.split('\n').map(i => i.trim()).filter(i => i.length > 0);
                 }
 
-                // 2. If a new item was provided in the URL, append it (avoiding strict duplicates if desired, or allow them)
+                // 2. If a new item is in the URL, append it below existing items
                 if (newItem) {
                     currentItems.push(newItem);
 
@@ -156,15 +243,13 @@
                     });
 
                     if (putRes.ok) {
-                        statusDiv.innerText = `✓ ${newItem} added successfully!`;
-                        // Clean the URL parameter so refreshing doesn't re-add the item
+                        statusDiv.innerText = `✓ ${newItem} added!`;
+                        // Clear URL parameter so refreshing doesn't duplicate the item
                         window.history.replaceState({}, document.title, window.location.pathname);
                     }
-                } else {
-                    statusDiv.innerText = "";
                 }
 
-                // 4. Render the full list onto the UI matching Apple Reminders style
+                // 4. Render the full list in order
                 renderList(currentItems);
 
             } catch (err) {
@@ -193,6 +278,51 @@
                 `;
                 container.appendChild(row);
             });
+        }
+
+        // Modal & Camera Scanner Handling
+        function openModal() {
+            document.getElementById('scanModal').style.display = 'flex';
+            
+            // Start camera QR scanner
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText) => {
+                    // If scanned text is a URL, navigate to it; otherwise treat as item name
+                    stopScanner();
+                    if (decodedText.startsWith('http')) {
+                        window.location.href = decodedText;
+                    } else {
+                        window.location.href = window.location.pathname + "?item=" + encodeURIComponent(decodedText);
+                    }
+                },
+                (errorMessage) => { /* scanning scanning... */ }
+            ).catch(err => {
+                console.log("Camera access error or not supported", err);
+            });
+        }
+
+        function closeModal() {
+            stopScanner();
+            document.getElementById('scanModal').style.display = 'none';
+        }
+
+        function stopScanner() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    html5QrCode.clear();
+                }).catch(err => console.log(err));
+            }
+        }
+
+        function submitManualItem() {
+            const val = document.getElementById('manualInput').value.trim();
+            if (val) {
+                stopScanner();
+                window.location.href = window.location.pathname + "?item=" + encodeURIComponent(val);
+            }
         }
     </script>
 </body>
