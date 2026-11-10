@@ -233,8 +233,20 @@ u<!DOCTYPE html>
     <script>
         const GITHUB_USERNAME = "tsr2725";
         const REPO_NAME = "ShoppingList";
-        const PERSONAL_ACCESS_TOKEN = "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";
         const FILE_PATH = "shopping.json"; // Store structured JSON list
+
+        function getPAT() {
+            let token = localStorage.getItem("gh_shopping_pat");
+            if (!token) {
+                token = prompt("Enter your GitHub Personal Access Token:");
+                if (token) {
+                    localStorage.setItem("gh_shopping_pat", token.trim());
+                }
+            }
+            return token;
+        }
+
+        const PERSONAL_ACCESS_TOKEN = getPAT();
 
         const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${FILE_PATH}`;
         let html5QrCode = null;
