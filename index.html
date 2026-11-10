@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Shopping List</title>
 
     <!-- iOS & Android Web App Meta Tags -->
@@ -13,7 +13,7 @@
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 
-    <!-- Dynamic Solid Icon Generator (Prevents iOS Dark Mode Black Borders) -->
+    <!-- Dynamic Solid Icon Generator -->
     <script>
         (function() {
             try {
@@ -22,11 +22,9 @@
                 canvas.height = 180;
                 const ctx = canvas.getContext('2d');
                 
-                // Solid gold background - iOS handles squircle rounding automatically
                 ctx.fillStyle = '#bfa15f';
                 ctx.fillRect(0, 0, 180, 180);
 
-                // Centered 🛒 Emoji
                 ctx.font = '100px apple color emoji, segoe ui emoji, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -86,11 +84,16 @@
             }
         }
 
-        html, body {
+        html {
+            background-color: var(--bg-color);
+            height: 100%;
+        }
+
+        body {
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 24px;
+            padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(32px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
             display: flex;
             flex-direction: column;
@@ -101,22 +104,27 @@
 
         .container {
             width: 100%;
-            max-width: 480px;
+            max-width: 560px;
             padding-bottom: 80px;
+            box-sizing: border-box;
         }
+
         .header-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            gap: 16px;
         }
+
         h1 {
-            font-size: 34px;
+            font-size: 32px;
             font-weight: 700;
             color: var(--accent-color);
             margin: 0;
             letter-spacing: -0.5px;
         }
+
         .clear-btn {
             background: none;
             border: none;
@@ -124,36 +132,50 @@
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            padding: 4px 8px;
+            padding: 6px 10px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            border-radius: 6px;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
         }
+
+        .clear-btn:hover:not(:disabled) {
+            background-color: rgba(191, 161, 95, 0.12);
+        }
+
         .clear-btn:disabled {
             color: var(--circle-border);
             cursor: default;
+            opacity: 0.6;
         }
+
         .list-card {
             background: var(--card-bg);
-            border-radius: 12px;
+            border-radius: 14px;
             border: 1px solid var(--card-border);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-            padding: 4px 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 8px 22px;
             margin-bottom: 20px;
         }
+
         .item-row {
             display: flex;
             align-items: center;
-            padding: 14px 0;
+            padding: 16px 0;
             border-bottom: 1px solid var(--item-border);
         }
+
         .item-row:last-child {
             border-bottom: none;
         }
+
         .radio-circle {
             width: 22px;
             height: 22px;
             border: 2px solid var(--circle-border);
             background-color: transparent;
             border-radius: 50%;
-            margin-right: 14px;
+            margin-right: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -161,10 +183,12 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
+
         .radio-circle.checked {
             border-color: var(--accent-color);
             background-color: var(--accent-color);
         }
+
         .radio-circle.checked::after {
             content: "";
             width: 5px;
@@ -174,8 +198,10 @@
             transform: rotate(45deg);
             margin-bottom: 2px;
         }
+
         .item-name {
             font-size: 17px;
+            line-height: 1.4;
             font-weight: 400;
             color: var(--text-color);
             flex-grow: 1;
@@ -183,27 +209,33 @@
             word-break: break-word;
             cursor: pointer;
         }
+
         .item-name.completed {
             text-decoration: line-through;
             color: var(--text-muted);
         }
+
         .delete-btn {
             background: none;
             border: none;
             color: var(--circle-border);
-            font-size: 18px;
+            font-size: 20px;
             cursor: pointer;
-            padding: 0 4px;
+            padding: 4px 8px;
             margin-left: 8px;
+            border-radius: 4px;
+            transition: color 0.2s ease;
         }
+
         .delete-btn:hover {
             color: var(--delete-hover);
         }
+
         .completed-section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 0 10px 0;
+            padding: 16px 0 12px 0;
             margin-top: 6px;
             border-top: 1px solid var(--card-border);
             font-size: 14px;
@@ -213,9 +245,11 @@
             user-select: none;
             transition: color 0.2s ease;
         }
+
         .completed-section-header:hover {
             color: var(--accent-color);
         }
+
         .status {
             text-align: center;
             margin-top: 14px;
@@ -224,16 +258,18 @@
             color: var(--text-muted);
             min-height: 20px;
         }
+
         .empty-state {
             color: var(--text-muted);
             text-align: center;
-            padding: 24px 0;
+            padding: 28px 0;
             font-style: italic;
         }
+
         .fab {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
+            bottom: calc(30px + env(safe-area-inset-bottom));
+            right: calc(30px + env(safe-area-inset-right));
             width: 60px;
             height: 60px;
             background-color: var(--accent-color);
@@ -247,7 +283,9 @@
             cursor: pointer;
             border: none;
             transition: transform 0.2s;
+            z-index: 99;
         }
+
         .fab:active { transform: scale(0.95); }
 
         .modal {
@@ -261,6 +299,7 @@
             padding: 20px;
             box-sizing: border-box;
         }
+
         .modal-content {
             background: var(--modal-bg);
             padding: 24px;
@@ -270,7 +309,9 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
             text-align: center;
         }
+
         .modal-content h3 { margin-top: 0; color: var(--accent-color); }
+
         .modal-input {
             width: 100%;
             padding: 12px;
@@ -282,6 +323,7 @@
             font-size: 16px;
             box-sizing: border-box;
         }
+
         .modal-btn {
             background-color: var(--accent-color);
             color: white;
@@ -294,11 +336,13 @@
             width: 100%;
             margin-top: 8px;
         }
+
         .modal-btn.secondary {
             background-color: var(--secondary-btn-bg);
             color: var(--secondary-btn-text);
             margin-top: 10px;
         }
+
         #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
     </style>
 </head>
@@ -335,6 +379,8 @@
         const REPO_NAME = "ShoppingList";
         const FILE_PATH = "shopping.json";
 
+        let PERSONAL_ACCESS_TOKEN = "";
+
         function getPAT(forceReset = false) {
             if (forceReset) {
                 localStorage.removeItem("gh_shopping_pat");
@@ -350,13 +396,22 @@
             return token;
         }
 
-        let PERSONAL_ACCESS_TOKEN = getPAT();
-
         const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${FILE_PATH}`;
         let html5QrCode = null;
         let currentItems = [];
         let currentSha = "";
         let showCompleted = false;
+
+        let syncTimer = null;
+        let isSyncing = false;
+        let syncPending = false;
+        let lastCommitMsg = "Update list";
+
+        function formatItemName(str) {
+            if (!str) return "";
+            const trimmed = str.trim();
+            return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+        }
 
         function decodeContent(b64) {
             const binString = atob(b64.replace(/\s/g, ''));
@@ -379,15 +434,17 @@
         }
 
         window.onload = async function() {
+            PERSONAL_ACCESS_TOKEN = getPAT();
+            if (!PERSONAL_ACCESS_TOKEN) return;
+
             const urlParams = new URLSearchParams(window.location.search);
             const rawItem = urlParams.get('item');
             
             await fetchListFromGitHub();
 
             if (rawItem) {
-                const itemToAdd = rawItem.charAt(0).toUpperCase() + rawItem.slice(1).toLowerCase();
                 window.history.replaceState({}, document.title, window.location.pathname);
-                await addItem(itemToAdd);
+                await addItem(rawItem);
             }
         };
 
@@ -424,28 +481,63 @@
             if (!contentStr.trim()) return [];
             try {
                 const parsed = JSON.parse(contentStr);
-                if (Array.isArray(parsed)) return parsed;
+                if (Array.isArray(parsed)) {
+                    return parsed.map(item => ({ ...item, name: formatItemName(item.name) }));
+                }
             } catch (e) {
                 return contentStr.split('\n')
                     .map(line => line.trim())
                     .filter(line => line.length > 0)
                     .map(name => ({
                         id: 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
-                        name: name,
+                        name: formatItemName(name),
                         completed: false
                     }));
             }
             return [];
         }
 
-        async function saveListToGitHub(commitMessage) {
+        function scheduleSync(commitMessage = "Update list") {
+            lastCommitMsg = commitMessage;
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerText = "Pending sync...";
+
+            if (syncTimer) clearTimeout(syncTimer);
+            syncTimer = setTimeout(() => {
+                processSyncQueue();
+            }, 400);
+        }
+
+        async function processSyncQueue() {
+            if (isSyncing) {
+                syncPending = true;
+                return;
+            }
+
+            isSyncing = true;
+            syncPending = false;
             const statusDiv = document.getElementById('status');
             statusDiv.innerText = "Syncing...";
 
             try {
+                if (!currentSha) {
+                    const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
+                        headers: { "Authorization": `Bearer ${PERSONAL_ACCESS_TOKEN}` }
+                    });
+                    if (getRes.status === 401) {
+                        handleAuthError();
+                        isSyncing = false;
+                        return;
+                    }
+                    if (getRes.ok) {
+                        const fileData = await getRes.json();
+                        currentSha = fileData.sha;
+                    }
+                }
+
                 const encodedContent = encodeContent(JSON.stringify(currentItems, null, 2));
                 const payload = {
-                    message: commitMessage,
+                    message: lastCommitMsg,
                     content: encodedContent
                 };
                 if (currentSha) payload.sha = currentSha;
@@ -461,6 +553,7 @@
 
                 if (putRes.status === 401) {
                     handleAuthError();
+                    isSyncing = false;
                     return;
                 }
 
@@ -469,13 +562,22 @@
                     currentSha = resData.content.sha;
                     statusDiv.innerText = "✓ Synced";
                     setTimeout(() => { if (statusDiv.innerText === "✓ Synced") statusDiv.innerText = ""; }, 2000);
+                } else if (putRes.status === 409 || putRes.status === 422) {
+                    currentSha = "";
+                    syncPending = true;
                 } else {
-                    statusDiv.innerText = "Sync failed. Fetching latest...";
-                    await fetchListFromGitHub();
+                    statusDiv.innerText = "Sync error. Retrying...";
+                    syncPending = true;
                 }
             } catch (err) {
                 console.error(err);
                 statusDiv.innerText = "Network error syncing with GitHub.";
+            } finally {
+                isSyncing = false;
+                if (syncPending) {
+                    syncPending = false;
+                    processSyncQueue();
+                }
             }
         }
 
@@ -545,43 +647,44 @@
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
-        async function addItem(name) {
-            if (!name.trim()) return;
+        async function addItem(rawName) {
+            const name = formatItemName(rawName);
+            if (!name) return;
             const newItem = {
                 id: 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
-                name: name.trim(),
+                name: name,
                 completed: false
             };
             currentItems.push(newItem);
             renderList();
-            await saveListToGitHub(`Add ${newItem.name}`);
+            scheduleSync(`Add ${newItem.name}`);
         }
 
-        async function toggleItem(id) {
+        function toggleItem(id) {
             const item = currentItems.find(i => i.id === id);
             if (!item) return;
 
             item.completed = !item.completed;
             renderList();
-            await saveListToGitHub(`Toggle ${item.name} (${item.completed ? 'completed' : 'active'})`);
+            scheduleSync(`Toggle ${item.name}`);
         }
 
-        async function deleteSingleItem(id) {
+        function deleteSingleItem(id) {
             const item = currentItems.find(i => i.id === id);
             if (!item) return;
 
             currentItems = currentItems.filter(i => i.id !== id);
             renderList();
-            await saveListToGitHub(`Remove ${item.name}`);
+            scheduleSync(`Remove ${item.name}`);
         }
 
-        async function clearCompletedItems() {
+        function clearCompletedItems() {
             const completedCount = currentItems.filter(i => i.completed).length;
             if (completedCount === 0) return;
 
             currentItems = currentItems.filter(i => !i.completed);
             renderList();
-            await saveListToGitHub(`Clear ${completedCount} completed items`);
+            scheduleSync(`Clear ${completedCount} completed items`);
         }
 
         function openModal() {
@@ -596,8 +699,10 @@
                     closeModal();
                     let text = decodedText;
                     if (decodedText.includes("?item=")) {
-                        const url = new URL(decodedText);
-                        text = url.searchParams.get("item") || decodedText;
+                        try {
+                            const url = new URL(decodedText);
+                            text = url.searchParams.get("item") || decodedText;
+                        } catch(e) {}
                     }
                     await addItem(text);
                 },
@@ -617,8 +722,8 @@
         }
 
         async function submitManualItem() {
-            const val = document.getElementById('manualInput').value.trim();
-            if (val) {
+            const val = document.getElementById('manualInput').value;
+            if (val && val.trim()) {
                 closeModal();
                 await addItem(val);
             }
