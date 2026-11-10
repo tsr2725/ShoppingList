@@ -4,5 +4,11 @@
     "name": "Milk",
     "quantity": 5,
     "completed": false
+  },
+  {
+    "id": "id-1794350053380-om7dz",
+    "name": "Pencil",
+    "quantity": 1,
+    "completed": false
   }
 ]
