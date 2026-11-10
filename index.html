@@ -24,8 +24,8 @@
         h1 {
             font-size: 34px;
             font-weight: 700;
-            color: #bfa15f; /* Matches your brownish gold header style */
-            margin-bottom: 24px;
+            color: #bfa15f; /* Apple Reminders brownish gold style */
+            margin-bottom: 20px;
             letter-spacing: -0.5px;
         }
         .list-card {
@@ -33,58 +33,58 @@
             border-radius: 12px;
             border: 1px solid #e5e5ea;
             box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-            padding: 20px;
+            padding: 10px 20px;
             margin-bottom: 20px;
         }
         .item-row {
             display: flex;
             align-items: center;
             padding: 12px 0;
+            border-bottom: 1px solid #f0f0f5;
         }
-        /* Apple Reminders style radio/checkbox ring */
+        .item-row:last-child {
+            border-bottom: none;
+        }
         .radio-circle {
             width: 22px;
             height: 22px;
-            border: 2px solid #c7c7cc;
+            border: 2px solid #bfa15f;
+            background-color: #bfa15f;
             border-radius: 50%;
             margin-right: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        }
+        /* Checkmark icon inside circle */
+        .radio-circle::after {
+            content: "";
+            width: 6px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            margin-bottom: 2px;
         }
         .item-name {
             font-size: 18px;
             font-weight: 400;
             color: #000000;
-            flex-grow: 1;
+            flex-grow: item;
         }
-        .action-button {
-            background-color: #bfa15f;
-            color: white;
-            border: none;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 12px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 16px;
-            box-shadow: 0 4px 12px rgba(191, 161, 95, 0.3);
-            transition: background-color 0.2s;
-        }
-        .action-button:active { background-color: #a3874d; }
-        .action-button:disabled { background-color: #e5e5ea; color: #8e8e93; box-shadow: none; cursor: not-allowed; }
         .status {
             text-align: center;
             margin-top: 14px;
             font-size: 14px;
             font-weight: 500;
-            min-height: 20px;
+            color: #8e8e93;
         }
-        .success { color: #34c759; }
-        .error { color: #ff3b30; }
+        .empty-state {
+            color: #8e8e93;
+            text-align: center;
+            padding: 20px 0;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -92,15 +92,11 @@
     <div class="container">
         <h1>Shopping</h1>
         
-        <div class="list-card">
-            <div class="item-row">
-                <div class="radio-circle" id="circle"></div>
-                <div class="item-name" id="itemText">Loading item...</div>
-            </div>
-            
-            <button id="addBtn" class="action-button" onclick="addItemToGitHub()">Add to List</button>
-            <div id="status" class="status"></div>
+        <div class="list-card" id="listContainer">
+            <div class="empty-state" id="loadingText">Loading shopping list...</div>
         </div>
+        
+        <div id="status" class="status"></div>
     </div>
 
     <script>
@@ -110,87 +106,93 @@
         const PERSONAL_ACCESS_TOKEN = "YOUR_GITHUB_PAT_TOKEN"; // Classic PAT with 'repo' scope
         const FILE_PATH = "shopping.txt";
 
-        // Read the item from the URL query parameter (e.g. ?item=Apples -> defaults to "Milk")
-        const urlParams = new URLSearchParams(window.location.search);
-        let itemName = urlParams.get('item') || 'Milk';
-        
-        // Capitalize nicely for display (e.g., "apples" -> "Apples")
-        itemName = itemName.charAt(0).toUpperCase() + itemName.slice(1).toLowerCase();
-        
-        // Update UI text dynamically
-        document.getElementById('itemText').innerText = itemName;
-        document.getElementById('addBtn').innerText = `Add ${itemName}`;
-        document.title = `Add ${itemName} - Shopping List`;
+        const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${FILE_PATH}`;
 
-        async function addItemToGitHub() {
-            const btn = document.getElementById('addBtn');
-            const status = document.getElementById('status');
-            const circle = document.getElementById('circle');
-
-            btn.disabled = true;
-            btn.innerText = "Adding...";
-            status.innerText = "";
-
-            const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${FILE_PATH}`;
+        window.onload = async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const rawItem = urlParams.get('item'); // e.g. ?item=apples
+            
+            let newItem = rawItem ? rawItem.charAt(0).toUpperCase() + rawItem.slice(1).toLowerCase() : null;
+            const statusDiv = document.getElementById('status');
 
             try {
-                // 1. Get current file content & SHA
-                let sha = "";
-                let currentContent = "";
-                
+                statusDiv.innerText = newItem ? `Adding ${newItem} to list...` : "Loading list...";
+
+                // 1. Fetch current contents from GitHub
                 const getRes = await fetch(apiUrl, {
                     headers: { "Authorization": `token ${PERSONAL_ACCESS_TOKEN}` }
                 });
 
+                let sha = "";
+                let currentItems = [];
+
                 if (getRes.ok) {
                     const fileData = await getRes.json();
                     sha = fileData.sha;
-                    currentContent = decodeURIComponent(escape(atob(fileData.content)));
+                    const decoded = decodeURIComponent(escape(atob(fileData.content)));
+                    // Split lines into an array and filter out blank lines
+                    currentItems = decoded.split('\n').map(i => i.trim()).filter(i => i.length > 0);
                 }
 
-                // 2. Append the dynamic item to the list
-                const updatedContent = currentContent + "\n" + itemName;
-                const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)));
+                // 2. If a new item was provided in the URL, append it (avoiding strict duplicates if desired, or allow them)
+                if (newItem) {
+                    currentItems.push(newItem);
 
-                // 3. Commit update back to GitHub
-                const putRes = await fetch(apiUrl, {
-                    method: "PUT",
-                    headers: {
-                        "Authorization": `token ${PERSONAL_ACCESS_TOKEN}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        message: `Add ${itemName} via QR code web app`,
-                        content: encodedContent,
-                        sha: sha
-                    })
-                });
+                    // 3. Save the updated list back to GitHub immediately
+                    const updatedContent = currentItems.join('\n');
+                    const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)));
 
-                if (putRes.ok) {
-                    btn.innerText = "Added!";
-                    circle.style.backgroundColor = "#bfa15f"; // Fill circle on success
-                    circle.style.borderColor = "#bfa15f";
-                    status.className = "status success";
-                    status.innerText = `✓ ${itemName} added to your list!`;
+                    const putRes = await fetch(apiUrl, {
+                        method: "PUT",
+                        headers: {
+                            "Authorization": `token ${PERSONAL_ACCESS_TOKEN}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            message: `Auto-add ${newItem} via QR scan`,
+                            content: encodedContent,
+                            sha: sha
+                        })
+                    });
+
+                    if (putRes.ok) {
+                        statusDiv.innerText = `✓ ${newItem} added successfully!`;
+                        // Clean the URL parameter so refreshing doesn't re-add the item
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
                 } else {
-                    throw new Error("Failed to commit update.");
+                    statusDiv.innerText = "";
                 }
 
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.innerText = `Add ${itemName}`;
-                    circle.style.backgroundColor = "transparent";
-                    circle.style.borderColor = "#c7c7cc";
-                    status.innerText = "";
-                }, 3500);
+                // 4. Render the full list onto the UI matching Apple Reminders style
+                renderList(currentItems);
 
             } catch (err) {
                 console.error(err);
-                btn.disabled = false;
-                btn.innerText = `Add ${itemName}`;
-                status.className = "status error";
-                status.innerText = "Error adding item.";
+                document.getElementById('loadingText').innerText = "Failed to load list.";
+                statusDiv.innerText = "Error syncing with GitHub.";
             }
+        };
+
+        function renderList(items) {
+            const container = document.getElementById('listContainer');
+            container.innerHTML = "";
+
+            if (items.length === 0) {
+                container.innerHTML = '<div class="empty-state">Your shopping list is empty.</div>';
+                return;
+            }
+
+            items.forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'item-row';
+                
+                row.innerHTML = `
+                    <div class="radio-circle"></div>
+                    <div class="item-name">${item}</div>
+                `;
+                container.appendChild(row);
+            });
         }
     </script>
 </body>
