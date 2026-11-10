@@ -3,56 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Shopping List</title>
+    <title>Shopping List</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f4f9;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            color: #1c1c1e;
             margin: 0;
+            padding: 24px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
-            color: #333;
+            min-height: 100vh;
+            box-sizing: border-box;
         }
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-            text-align: center;
-            max-width: 320px;
-            width: 90%;
+        .container {
+            width: 100%;
+            max-width: 480px;
         }
-        h2 { margin-top: 0; font-size: 22px; color: #111; }
-        p { color: #666; font-size: 14px; margin-bottom: 24px; }
-        button {
-            background-color: #24292e;
+        h1 {
+            font-size: 34px;
+            font-weight: 700;
+            color: #bfa15f; /* Matches your brownish gold header style */
+            margin-bottom: 24px;
+            letter-spacing: -0.5px;
+        }
+        .list-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e5e5ea;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .item-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+        }
+        /* Apple Reminders style radio/checkbox ring */
+        .radio-circle {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #c7c7cc;
+            border-radius: 50%;
+            margin-right: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .item-name {
+            font-size: 18px;
+            font-weight: 400;
+            color: #000000;
+            flex-grow: 1;
+        }
+        .action-button {
+            background-color: #bfa15f;
             color: white;
             border: none;
-            padding: 14px 24px;
+            padding: 14px;
             font-size: 16px;
             font-weight: 600;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             width: 100%;
+            margin-top: 16px;
+            box-shadow: 0 4px 12px rgba(191, 161, 95, 0.3);
             transition: background-color 0.2s;
         }
-        button:active { background-color: #444d56; }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
-        .status { margin-top: 16px; font-size: 13px; font-weight: 500; }
-        .success { color: #28a745; }
-        .error { color: #d73a49; }
+        .action-button:active { background-color: #a3874d; }
+        .action-button:disabled { background-color: #e5e5ea; color: #8e8e93; box-shadow: none; cursor: not-allowed; }
+        .status {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 14px;
+            font-weight: 500;
+            min-height: 20px;
+        }
+        .success { color: #34c759; }
+        .error { color: #ff3b30; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>Shopping List</h2>
-        <p>Tap below to add <strong>Milk</strong> via GitHub.</p>
+    <div class="container">
+        <h1>Shopping</h1>
         
-        <button id="addBtn" onclick="addMilkToGitHub()">Add Milk</button>
-        <div id="status" class="status"></div>
+        <div class="list-card">
+            <div class="item-row">
+                <div class="radio-circle" id="circle"></div>
+                <div class="item-name" id="itemText">Loading item...</div>
+            </div>
+            
+            <button id="addBtn" class="action-button" onclick="addItemToGitHub()">Add to List</button>
+            <div id="status" class="status"></div>
+        </div>
     </div>
 
     <script>
@@ -62,9 +110,22 @@
         const PERSONAL_ACCESS_TOKEN = "YOUR_GITHUB_PAT_TOKEN"; // Classic PAT with 'repo' scope
         const FILE_PATH = "shopping.txt";
 
-        async function addMilkToGitHub() {
+        // Read the item from the URL query parameter (e.g. ?item=Apples -> defaults to "Milk")
+        const urlParams = new URLSearchParams(window.location.search);
+        let itemName = urlParams.get('item') || 'Milk';
+        
+        // Capitalize nicely for display (e.g., "apples" -> "Apples")
+        itemName = itemName.charAt(0).toUpperCase() + itemName.slice(1).toLowerCase();
+        
+        // Update UI text dynamically
+        document.getElementById('itemText').innerText = itemName;
+        document.getElementById('addBtn').innerText = `Add ${itemName}`;
+        document.title = `Add ${itemName} - Shopping List`;
+
+        async function addItemToGitHub() {
             const btn = document.getElementById('addBtn');
             const status = document.getElementById('status');
+            const circle = document.getElementById('circle');
 
             btn.disabled = true;
             btn.innerText = "Adding...";
@@ -73,7 +134,7 @@
             const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${FILE_PATH}`;
 
             try {
-                // 1. Get the current file content and SHA (required by GitHub API to update files)
+                // 1. Get current file content & SHA
                 let sha = "";
                 let currentContent = "";
                 
@@ -84,15 +145,14 @@
                 if (getRes.ok) {
                     const fileData = await getRes.json();
                     sha = fileData.sha;
-                    // Decode existing content from Base64
                     currentContent = decodeURIComponent(escape(atob(fileData.content)));
                 }
 
-                // 2. Append "Milk" to the list
-                const updatedContent = currentContent + "\nMilk";
+                // 2. Append the dynamic item to the list
+                const updatedContent = currentContent + "\n" + itemName;
                 const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)));
 
-                // 3. Commit the updated file back to GitHub via API
+                // 3. Commit update back to GitHub
                 const putRes = await fetch(apiUrl, {
                     method: "PUT",
                     headers: {
@@ -100,30 +160,34 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        message: "Add Milk via QR code web app",
+                        message: `Add ${itemName} via QR code web app`,
                         content: encodedContent,
-                        sha: sha // Required if file already exists
+                        sha: sha
                     })
                 });
 
                 if (putRes.ok) {
                     btn.innerText = "Added!";
+                    circle.style.backgroundColor = "#bfa15f"; // Fill circle on success
+                    circle.style.borderColor = "#bfa15f";
                     status.className = "status success";
-                    status.innerText = "✓ Milk added to GitHub repository!";
+                    status.innerText = `✓ ${itemName} added to your list!`;
                 } else {
                     throw new Error("Failed to commit update.");
                 }
 
                 setTimeout(() => {
                     btn.disabled = false;
-                    btn.innerText = "Add Milk";
+                    btn.innerText = `Add ${itemName}`;
+                    circle.style.backgroundColor = "transparent";
+                    circle.style.borderColor = "#c7c7cc";
                     status.innerText = "";
-                }, 3000);
+                }, 3500);
 
             } catch (err) {
                 console.error(err);
                 btn.disabled = false;
-                btn.innerText = "Add Milk";
+                btn.innerText = `Add ${itemName}`;
                 status.className = "status error";
                 status.innerText = "Error adding item.";
             }
