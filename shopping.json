@@ -18,5 +18,10 @@
     "id": "id-1794302595417-2fgay",
     "name": "milk",
     "completed": true
+  },
+  {
+    "id": "id-1794302625181-6lypr",
+    "name": "Handwash",
+    "completed": false
   }
 ]
