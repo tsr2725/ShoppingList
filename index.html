@@ -13,36 +13,57 @@
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 
-    <!-- Dynamic Solid Icon Generator -->
+    <!-- Dynamic Theme-Matched Icon Generator -->
     <script>
-        (function() {
-            try {
+        function updateDynamicIcon() {
+            const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const bgColor = isDark ? '#000000' : '#ffffff';
+
+            const img = new Image();
+            img.src = 'logo.png';
+
+            img.onload = function() {
                 const canvas = document.createElement('canvas');
                 canvas.width = 180;
                 canvas.height = 180;
                 const ctx = canvas.getContext('2d');
-                
-                ctx.fillStyle = '#bfa15f';
+
+                ctx.fillStyle = bgColor;
                 ctx.fillRect(0, 0, 180, 180);
 
-                ctx.font = '100px apple color emoji, segoe ui emoji, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('🛒', 90, 96);
+                const maxDim = 132;
+                const scale = Math.min(maxDim / img.width, maxDim / img.height);
+                const w = img.width * scale;
+                const h = img.height * scale;
+                const x = (180 - w) / 2;
+                const y = (180 - h) / 2;
+
+                ctx.drawImage(img, x, y, w, h);
 
                 const iconUrl = canvas.toDataURL('image/png');
-                
-                const appleIcon = document.createElement('link');
-                appleIcon.rel = 'apple-touch-icon';
-                appleIcon.href = iconUrl;
-                document.head.appendChild(appleIcon);
 
-                const favicon = document.createElement('link');
-                favicon.rel = 'icon';
+                let appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+                if (!appleIcon) {
+                    appleIcon = document.createElement('link');
+                    appleIcon.rel = 'apple-touch-icon';
+                    document.head.appendChild(appleIcon);
+                }
+                appleIcon.href = iconUrl;
+
+                let favicon = document.querySelector('link[rel="icon"]');
+                if (!favicon) {
+                    favicon = document.createElement('link');
+                    favicon.rel = 'icon';
+                    document.head.appendChild(favicon);
+                }
                 favicon.href = iconUrl;
-                document.head.appendChild(favicon);
-            } catch(e) { console.error(e); }
-        })();
+            };
+        }
+
+        updateDynamicIcon();
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateDynamicIcon);
+        }
     </script>
 
     <!-- Html5-Qrcode scanner library -->
@@ -166,7 +187,7 @@
             padding: 16px 0;
             border-bottom: 1px solid var(--item-border);
             user-select: none;
-            transition: transform 0.15s ease, opacity 0.15s ease;
+            transition: transform 0.15s ease, opacity 0.2s ease;
         }
 
         .item-row:last-child {
@@ -236,7 +257,7 @@
             flex-grow: 1;
             transition: color 0.2s;
             word-break: break-word;
-            cursor: pointer;
+            cursor: default;
             display: flex;
             align-items: center;
             flex-wrap: wrap;
@@ -380,7 +401,6 @@
             box-sizing: border-box;
         }
 
-        /* Quantity Picker Styling */
         .qty-picker-container {
             margin: 14px 0 18px 0;
             display: flex;
@@ -499,7 +519,6 @@
                 <div class="qty-picker-controls">
                     <button type="button" class="qty-btn" onclick="adjustEditQty(-1)">−</button>
                     <select id="editItemQty" class="qty-select-wheel">
-                        <!-- Options 1-99 generated dynamically -->
                     </select>
                     <button type="button" class="qty-btn" onclick="adjustEditQty(1)">+</button>
                 </div>
@@ -547,7 +566,10 @@
         let lastLocalActionTime = 0;
         let editingItemId = null;
 
-        // Drag & Drop State
+        // Pending move set and timeouts for stay-in-place animation
+        const pendingMoveIds = new Set();
+        const pendingTimeouts = {};
+
         let dragSrcIndex = null;
         let touchActiveIndex = null;
         let touchRowElement = null;
@@ -648,7 +670,7 @@
         });
 
         async function pollGitHub() {
-            if (isSyncing || syncPending || (Date.now() - lastLocalActionTime < 1000)) return;
+            if (isSyncing || syncPending || (Date.now() - lastLocalActionTime < 1000) || pendingMoveIds.size > 0) return;
 
             try {
                 const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
@@ -824,10 +846,10 @@
             const clearBtn = document.getElementById('clearBtn');
             container.innerHTML = "";
 
-            const activeItems = currentItems.filter(i => !i.completed);
-            const completedItems = currentItems.filter(i => i.completed);
+            const activeItems = currentItems.filter(i => !i.completed || pendingMoveIds.has(i.id));
+            const completedItems = currentItems.filter(i => i.completed && !pendingMoveIds.has(i.id));
 
-            clearBtn.disabled = completedItems.length === 0;
+            clearBtn.disabled = currentItems.filter(i => i.completed).length === 0;
 
             if (currentItems.length === 0) {
                 container.innerHTML = '<div class="empty-state">Your shopping list is empty.</div>';
@@ -841,13 +863,13 @@
                     const realIndex = currentItems.findIndex(i => i.id === item.id);
                     const qtyVal = item.quantity || 1;
                     const qtyHtml = `<span class="qty-badge">x${qtyVal}</span>`;
+                    const isCompleted = item.completed;
                     
                     const row = document.createElement('div');
                     row.className = 'item-row';
                     row.draggable = true;
                     row.dataset.index = realIndex;
                     
-                    // Desktop Drag Events
                     row.ondragstart = (e) => handleDragStart(e, realIndex);
                     row.ondragover = (e) => handleDragOver(e, realIndex);
                     row.ondragleave = (e) => handleDragLeave(e);
@@ -859,8 +881,8 @@
                              ontouchstart="handleTouchStart(event, ${realIndex})" 
                              ontouchmove="handleTouchMove(event)" 
                              ontouchend="handleTouchEnd(event)">⋮⋮</div>
-                        <div class="radio-circle" onclick="toggleItem('${item.id}')"></div>
-                        <div class="item-name" onclick="toggleItem('${item.id}')">${escapeHtml(item.name)}${qtyHtml}</div>
+                        <div class="radio-circle ${isCompleted ? 'checked' : ''}" onclick="toggleItem('${item.id}')"></div>
+                        <div class="item-name ${isCompleted ? 'completed' : ''}">${escapeHtml(item.name)}${qtyHtml}</div>
                         <button class="action-btn" onclick="openEditModal('${item.id}')" title="Edit item">✎</button>
                         <button class="action-btn delete-btn" onclick="deleteSingleItem('${item.id}')" title="Delete item">&times;</button>
                     `;
@@ -901,7 +923,7 @@
                                  ontouchmove="handleTouchMove(event)" 
                                  ontouchend="handleTouchEnd(event)">⋮⋮</div>
                             <div class="radio-circle checked" onclick="toggleItem('${item.id}')"></div>
-                            <div class="item-name completed" onclick="toggleItem('${item.id}')">${escapeHtml(item.name)}${qtyHtml}</div>
+                            <div class="item-name completed">${escapeHtml(item.name)}${qtyHtml}</div>
                             <button class="action-btn" onclick="openEditModal('${item.id}')" title="Edit item">✎</button>
                             <button class="action-btn delete-btn" onclick="deleteSingleItem('${item.id}')" title="Delete item">&times;</button>
                         `;
@@ -911,7 +933,6 @@
             }
         }
 
-        /* --- Drag & Drop Handlers (Mouse & Touch) --- */
         function handleDragStart(e, index) {
             dragSrcIndex = index;
             e.dataTransfer.setData('text/plain', index);
@@ -990,7 +1011,6 @@
             touchRowElement = null;
         }
 
-        /* --- Edit Modal Logic --- */
         function openEditModal(id) {
             const item = currentItems.find(i => i.id === id);
             if (!item) return;
@@ -1053,14 +1073,43 @@
             const item = currentItems.find(i => i.id === id);
             if (!item) return;
 
-            item.completed = !item.completed;
-            renderList();
-            scheduleSync(`Toggle ${item.name}`);
+            if (!item.completed) {
+                // Checking off item: active -> completed
+                item.completed = true;
+                pendingMoveIds.add(id);
+                renderList();
+                scheduleSync(`Toggle ${item.name}`);
+
+                if (pendingTimeouts[id]) clearTimeout(pendingTimeouts[id]);
+
+                // Stay in place for 1 second before moving to completed section
+                pendingTimeouts[id] = setTimeout(() => {
+                    pendingMoveIds.delete(id);
+                    delete pendingTimeouts[id];
+                    renderList();
+                }, 1000);
+            } else {
+                // Unchecking item: completed -> active immediately
+                if (pendingTimeouts[id]) {
+                    clearTimeout(pendingTimeouts[id]);
+                    delete pendingTimeouts[id];
+                }
+                pendingMoveIds.delete(id);
+                item.completed = false;
+                renderList();
+                scheduleSync(`Toggle ${item.name}`);
+            }
         }
 
         function deleteSingleItem(id) {
             const item = currentItems.find(i => i.id === id);
             if (!item) return;
+
+            if (pendingTimeouts[id]) {
+                clearTimeout(pendingTimeouts[id]);
+                delete pendingTimeouts[id];
+            }
+            pendingMoveIds.delete(id);
 
             currentItems = currentItems.filter(i => i.id !== id);
             renderList();
@@ -1072,6 +1121,12 @@
             if (completedCount === 0) return;
 
             currentItems = currentItems.filter(i => !i.completed);
+            pendingMoveIds.clear();
+            Object.keys(pendingTimeouts).forEach(k => {
+                clearTimeout(pendingTimeouts[k]);
+                delete pendingTimeouts[k];
+            });
+
             renderList();
             scheduleSync(`Clear ${completedCount} completed items`);
         }
