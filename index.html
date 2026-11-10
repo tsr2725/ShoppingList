@@ -165,10 +165,37 @@
             align-items: center;
             padding: 16px 0;
             border-bottom: 1px solid var(--item-border);
+            user-select: none;
+            transition: transform 0.15s ease, opacity 0.15s ease;
         }
 
         .item-row:last-child {
             border-bottom: none;
+        }
+
+        .item-row.dragging {
+            opacity: 0.4;
+            background: var(--card-bg);
+        }
+
+        .item-row.drag-over {
+            border-top: 2px solid var(--accent-color);
+        }
+
+        .drag-handle {
+            color: var(--circle-border);
+            font-size: 18px;
+            cursor: grab;
+            padding: 0 12px 0 0;
+            user-select: none;
+            touch-action: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
         }
 
         .radio-circle {
@@ -177,7 +204,7 @@
             border: 2px solid var(--circle-border);
             background-color: transparent;
             border-radius: 50%;
-            margin-right: 16px;
+            margin-right: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -240,19 +267,23 @@
             color: var(--text-muted);
         }
 
-        .delete-btn {
+        .action-btn {
             background: none;
             border: none;
             color: var(--circle-border);
-            font-size: 20px;
+            font-size: 18px;
             cursor: pointer;
-            padding: 4px 8px;
-            margin-left: 8px;
+            padding: 4px 6px;
+            margin-left: 4px;
             border-radius: 4px;
             transition: color 0.2s ease;
         }
 
-        .delete-btn:hover {
+        .action-btn:hover {
+            color: var(--accent-color);
+        }
+
+        .action-btn.delete-btn:hover {
             color: var(--delete-hover);
         }
 
@@ -349,6 +380,63 @@
             box-sizing: border-box;
         }
 
+        /* Quantity Picker Styling */
+        .qty-picker-container {
+            margin: 14px 0 18px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            padding: 8px 14px;
+        }
+
+        .qty-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .qty-picker-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .qty-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .qty-btn:active {
+            opacity: 0.8;
+        }
+
+        .qty-select-wheel {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--accent-color);
+            background: var(--badge-bg);
+            border: 1px solid var(--accent-color);
+            padding: 6px 14px;
+            cursor: pointer;
+            text-align: center;
+            border-radius: 8px;
+            outline: none;
+        }
+
         .modal-btn {
             background-color: var(--accent-color);
             color: white;
@@ -388,6 +476,7 @@
 
     <button class="fab" onclick="openModal()">+</button>
 
+    <!-- Add Product Modal -->
     <div class="modal" id="scanModal">
         <div class="modal-content">
             <h3>Add Product</h3>
@@ -396,6 +485,28 @@
             <input type="text" id="manualInput" class="modal-input" placeholder="Enter product name (e.g. Bread x2)" onkeydown="if(event.key==='Enter') submitManualItem()">
             <button class="modal-btn" onclick="submitManualItem()">Add Product</button>
             <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h3>Edit Product</h3>
+            <input type="text" id="editItemName" class="modal-input" placeholder="Item Name" onkeydown="if(event.key==='Enter') saveEditedItem()">
+            
+            <div class="qty-picker-container">
+                <label class="qty-label">Quantity</label>
+                <div class="qty-picker-controls">
+                    <button type="button" class="qty-btn" onclick="adjustEditQty(-1)">−</button>
+                    <select id="editItemQty" class="qty-select-wheel">
+                        <!-- Options 1-99 generated dynamically -->
+                    </select>
+                    <button type="button" class="qty-btn" onclick="adjustEditQty(1)">+</button>
+                </div>
+            </div>
+
+            <button class="modal-btn" onclick="saveEditedItem()">Save Changes</button>
+            <button class="modal-btn secondary" onclick="closeEditModal()">Cancel</button>
         </div>
     </div>
 
@@ -434,6 +545,12 @@
         let syncPending = false;
         let lastCommitMsg = "Update list";
         let lastLocalActionTime = 0;
+        let editingItemId = null;
+
+        // Drag & Drop State
+        let dragSrcIndex = null;
+        let touchActiveIndex = null;
+        let touchRowElement = null;
 
         function formatItemName(str) {
             if (!str) return "";
@@ -441,7 +558,6 @@
             return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
         }
 
-        // Parses trailing x[num] or x [num] from input string
         function parseItemInput(rawStr) {
             if (!rawStr) return { name: "", quantity: 1 };
             const trimmed = rawStr.trim();
@@ -480,6 +596,7 @@
         }
 
         window.onload = async function() {
+            populateQtyDropdown();
             PERSONAL_ACCESS_TOKEN = getPAT();
             if (!PERSONAL_ACCESS_TOKEN) return;
 
@@ -495,6 +612,17 @@
 
             startPolling();
         };
+
+        function populateQtyDropdown() {
+            const select = document.getElementById('editItemQty');
+            select.innerHTML = '';
+            for (let i = 1; i <= 99; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = `x${i}`;
+                select.appendChild(opt);
+            }
+        }
 
         function startPolling() {
             if (pollTimer) clearInterval(pollTimer);
@@ -710,14 +838,31 @@
                 container.innerHTML = '<div class="empty-state">All items completed! Tap below to view.</div>';
             } else {
                 activeItems.forEach((item) => {
-                    const qtyHtml = item.quantity > 1 ? `<span class="qty-badge">x${item.quantity}</span>` : '';
+                    const realIndex = currentItems.findIndex(i => i.id === item.id);
+                    const qtyVal = item.quantity || 1;
+                    const qtyHtml = `<span class="qty-badge">x${qtyVal}</span>`;
+                    
                     const row = document.createElement('div');
                     row.className = 'item-row';
+                    row.draggable = true;
+                    row.dataset.index = realIndex;
                     
+                    // Desktop Drag Events
+                    row.ondragstart = (e) => handleDragStart(e, realIndex);
+                    row.ondragover = (e) => handleDragOver(e, realIndex);
+                    row.ondragleave = (e) => handleDragLeave(e);
+                    row.ondrop = (e) => handleDrop(e, realIndex);
+                    row.ondragend = (e) => handleDragEnd(e);
+
                     row.innerHTML = `
+                        <div class="drag-handle" 
+                             ontouchstart="handleTouchStart(event, ${realIndex})" 
+                             ontouchmove="handleTouchMove(event)" 
+                             ontouchend="handleTouchEnd(event)">⋮⋮</div>
                         <div class="radio-circle" onclick="toggleItem('${item.id}')"></div>
                         <div class="item-name" onclick="toggleItem('${item.id}')">${escapeHtml(item.name)}${qtyHtml}</div>
-                        <button class="delete-btn" onclick="deleteSingleItem('${item.id}')" title="Delete item">&times;</button>
+                        <button class="action-btn" onclick="openEditModal('${item.id}')" title="Edit item">✎</button>
+                        <button class="action-btn delete-btn" onclick="deleteSingleItem('${item.id}')" title="Delete item">&times;</button>
                     `;
                     container.appendChild(row);
                 });
@@ -735,19 +880,154 @@
 
                 if (showCompleted) {
                     completedItems.forEach((item) => {
-                        const qtyHtml = item.quantity > 1 ? `<span class="qty-badge">x${item.quantity}</span>` : '';
+                        const realIndex = currentItems.findIndex(i => i.id === item.id);
+                        const qtyVal = item.quantity || 1;
+                        const qtyHtml = `<span class="qty-badge">x${qtyVal}</span>`;
+                        
                         const row = document.createElement('div');
                         row.className = 'item-row';
-                        
+                        row.draggable = true;
+                        row.dataset.index = realIndex;
+
+                        row.ondragstart = (e) => handleDragStart(e, realIndex);
+                        row.ondragover = (e) => handleDragOver(e, realIndex);
+                        row.ondragleave = (e) => handleDragLeave(e);
+                        row.ondrop = (e) => handleDrop(e, realIndex);
+                        row.ondragend = (e) => handleDragEnd(e);
+
                         row.innerHTML = `
+                            <div class="drag-handle" 
+                                 ontouchstart="handleTouchStart(event, ${realIndex})" 
+                                 ontouchmove="handleTouchMove(event)" 
+                                 ontouchend="handleTouchEnd(event)">⋮⋮</div>
                             <div class="radio-circle checked" onclick="toggleItem('${item.id}')"></div>
                             <div class="item-name completed" onclick="toggleItem('${item.id}')">${escapeHtml(item.name)}${qtyHtml}</div>
-                            <button class="delete-btn" onclick="deleteSingleItem('${item.id}')" title="Delete item">&times;</button>
+                            <button class="action-btn" onclick="openEditModal('${item.id}')" title="Edit item">✎</button>
+                            <button class="action-btn delete-btn" onclick="deleteSingleItem('${item.id}')" title="Delete item">&times;</button>
                         `;
                         container.appendChild(row);
                     });
                 }
             }
+        }
+
+        /* --- Drag & Drop Handlers (Mouse & Touch) --- */
+        function handleDragStart(e, index) {
+            dragSrcIndex = index;
+            e.dataTransfer.setData('text/plain', index);
+            e.currentTarget.classList.add('dragging');
+        }
+
+        function handleDragOver(e, index) {
+            e.preventDefault();
+            const row = e.currentTarget;
+            row.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e, targetIndex) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            if (dragSrcIndex === null || dragSrcIndex === targetIndex) return;
+
+            const movedItem = currentItems.splice(dragSrcIndex, 1)[0];
+            currentItems.splice(targetIndex, 0, movedItem);
+
+            renderList();
+            scheduleSync("Reordered shopping list");
+        }
+
+        function handleDragEnd(e) {
+            e.currentTarget.classList.remove('dragging');
+            document.querySelectorAll('.item-row').forEach(r => r.classList.remove('drag-over'));
+            dragSrcIndex = null;
+        }
+
+        function handleTouchStart(e, index) {
+            touchActiveIndex = index;
+            touchRowElement = e.currentTarget.closest('.item-row');
+            if (touchRowElement) touchRowElement.classList.add('dragging');
+        }
+
+        function handleTouchMove(e) {
+            if (touchActiveIndex === null) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (!targetEl) return;
+            const targetRow = targetEl.closest('.item-row');
+            
+            document.querySelectorAll('.item-row').forEach(r => r.classList.remove('drag-over'));
+            if (targetRow && targetRow !== touchRowElement) {
+                targetRow.classList.add('drag-over');
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (touchActiveIndex === null) return;
+            const touch = e.changedTouches[0];
+            const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+            
+            if (touchRowElement) touchRowElement.classList.remove('dragging');
+            document.querySelectorAll('.item-row').forEach(r => r.classList.remove('drag-over'));
+
+            if (targetEl) {
+                const targetRow = targetEl.closest('.item-row');
+                if (targetRow && targetRow.dataset.index !== undefined) {
+                    const targetIndex = parseInt(targetRow.dataset.index, 10);
+                    if (targetIndex !== touchActiveIndex) {
+                        const movedItem = currentItems.splice(touchActiveIndex, 1)[0];
+                        currentItems.splice(targetIndex, 0, movedItem);
+                        renderList();
+                        scheduleSync("Reordered shopping list");
+                    }
+                }
+            }
+            touchActiveIndex = null;
+            touchRowElement = null;
+        }
+
+        /* --- Edit Modal Logic --- */
+        function openEditModal(id) {
+            const item = currentItems.find(i => i.id === id);
+            if (!item) return;
+
+            editingItemId = id;
+            document.getElementById('editItemName').value = item.name;
+            document.getElementById('editItemQty').value = item.quantity || 1;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            editingItemId = null;
+        }
+
+        function adjustEditQty(delta) {
+            const select = document.getElementById('editItemQty');
+            let current = parseInt(select.value, 10) || 1;
+            let newVal = Math.max(1, Math.min(99, current + delta));
+            select.value = newVal;
+        }
+
+        function saveEditedItem() {
+            if (!editingItemId) return;
+            const item = currentItems.find(i => i.id === editingItemId);
+            if (!item) return;
+
+            const newName = formatItemName(document.getElementById('editItemName').value);
+            const newQty = parseInt(document.getElementById('editItemQty').value, 10) || 1;
+
+            if (newName) {
+                item.name = newName;
+                item.quantity = newQty;
+                renderList();
+                scheduleSync(`Edit ${item.name}`);
+            }
+            closeEditModal();
         }
 
         function escapeHtml(str) {
@@ -766,7 +1046,7 @@
             };
             currentItems.push(newItem);
             renderList();
-            scheduleSync(`Add ${newItem.name}${newItem.quantity > 1 ? ' x' + newItem.quantity : ''}`);
+            scheduleSync(`Add ${newItem.name} x${newItem.quantity}`);
         }
 
         function toggleItem(id) {
