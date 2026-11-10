@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopping</title>
-    <!-- Include Html5-Qrcode scanner library from CDN -->
+    <!-- Html5-Qrcode scanner library -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         body {
@@ -48,19 +48,27 @@
         .item-row:last-child {
             border-bottom: none;
         }
+        /* Unchecked Apple Reminders style circle */
         .radio-circle {
             width: 22px;
             height: 22px;
-            border: 2px solid #bfa15f;
-            background-color: #bfa15f;
+            border: 2px solid #c7c7cc;
+            background-color: transparent;
             border-radius: 50%;
             margin-right: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
-        .radio-circle::after {
+        /* Checked state when user taps to complete */
+        .radio-circle.checked {
+            border-color: #bfa15f;
+            background-color: #bfa15f;
+        }
+        .radio-circle.checked::after {
             content: "";
             width: 6px;
             height: 10px;
@@ -73,6 +81,11 @@
             font-size: 18px;
             font-weight: 400;
             color: #000000;
+            transition: color 0.2s;
+        }
+        .item-name.completed {
+            text-decoration: line-through;
+            color: #8e8e93;
         }
         .status {
             text-align: center;
@@ -87,7 +100,7 @@
             padding: 20px 0;
             font-style: italic;
         }
-        /* Floating Action Button (matches screenshot + button) */
+        /* Floating Action Button */
         .fab {
             position: fixed;
             bottom: 30px;
@@ -171,7 +184,7 @@
         <div id="status" class="status"></div>
     </div>
 
-    <!-- Floating Action Button (Scan / Add) -->
+    <!-- Floating Action Button -->
     <button class="fab" onclick="openModal()">+</button>
 
     <!-- Scanner / Manual Entry Modal -->
@@ -249,7 +262,7 @@
                     }
                 }
 
-                // 4. Render the full list in order
+                // 4. Render the full list of previous and current items
                 renderList(currentItems);
 
             } catch (err) {
@@ -268,29 +281,76 @@
                 return;
             }
 
-            items.forEach(item => {
+            items.forEach((item, index) => {
                 const row = document.createElement('div');
                 row.className = 'item-row';
                 
                 row.innerHTML = `
-                    <div class="radio-circle"></div>
-                    <div class="item-name">${item}</div>
+                    <div class="radio-circle" id="circle-${index}" onclick="completeItem(${index}, '${item.replace(/'/g, "\\'")}')"></div>
+                    <div class="item-name" id="name-${index}">${item}</div>
                 `;
                 container.appendChild(row);
             });
+        }
+
+        // Handle ticking/completing an item
+        async function completeItem(index, itemName) {
+            const circle = document.getElementById(`circle-${index}`);
+            const nameEl = document.getElementById(`name-${index}`);
+
+            // Apply visual check effect immediately
+            circle.classList.add('checked');
+            nameEl.classList.add('completed');
+            document.getElementById('status').innerText = `Completing ${itemName}...`;
+
+            try {
+                // Fetch latest file content & sha to avoid conflicts
+                const getRes = await fetch(apiUrl, {
+                    headers: { "Authorization": `token ${PERSONAL_ACCESS_TOKEN}` }
+                });
+                if (!getRes.ok) return;
+                const fileData = await getRes.json();
+                let currentItems = decodeURIComponent(escape(atob(fileData.content)))
+                    .split('\n').map(i => i.trim()).filter(i => i.length > 0);
+
+                // Remove the completed item from the array
+                currentItems.splice(index, 1);
+
+                const updatedContent = currentItems.join('\n');
+                const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)));
+
+                const putRes = await fetch(apiUrl, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `token ${PERSONAL_ACCESS_TOKEN}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: `Complete and remove ${itemName}`,
+                        content: encodedContent,
+                        sha: fileData.sha
+                    })
+                });
+
+                if (putRes.ok) {
+                    document.getElementById('status').innerText = "";
+                    setTimeout(() => renderList(currentItems), 300);
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('status').innerText = "Error updating list.";
+            }
         }
 
         // Modal & Camera Scanner Handling
         function openModal() {
             document.getElementById('scanModal').style.display = 'flex';
             
-            // Start camera QR scanner
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start(
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 250, height: 250 } },
                 (decodedText) => {
-                    // If scanned text is a URL, navigate to it; otherwise treat as item name
                     stopScanner();
                     if (decodedText.startsWith('http')) {
                         window.location.href = decodedText;
@@ -298,7 +358,7 @@
                         window.location.href = window.location.pathname + "?item=" + encodeURIComponent(decodedText);
                     }
                 },
-                (errorMessage) => { /* scanning scanning... */ }
+                (errorMessage) => { /* scanning... */ }
             ).catch(err => {
                 console.log("Camera access error or not supported", err);
             });
