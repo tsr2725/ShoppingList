@@ -2,11 +2,13 @@
   {
     "id": "id-1794344286464-v2003",
     "name": "Bread",
-    "completed": false
+    "completed": true,
+    "quantity": 1
   },
   {
     "id": "id-1794344302220-8u0yi",
     "name": "Butter spread low",
-    "completed": false
+    "completed": false,
+    "quantity": 1
   }
 ]
