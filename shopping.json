@@ -32,7 +32,7 @@
   {
     "id": "id-1794305117220-0yv6j",
     "name": "Butter spread low",
-    "completed": false
+    "completed": true
   },
   {
     "id": "id-1794305126372-r3vdv",
@@ -42,7 +42,7 @@
   {
     "id": "id-1794305130409-nl8ul",
     "name": "butter block",
-    "completed": true
+    "completed": false
   },
   {
     "id": "id-1794305133096-rxc1u",
