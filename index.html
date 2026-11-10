@@ -378,7 +378,7 @@
         const GITHUB_USERNAME = "tsr2725";
         const REPO_NAME = "ShoppingList";
         const FILE_PATH = "shopping.json";
-        const POLL_INTERVAL = 3000; // Check GitHub every 3 seconds for updates
+        const POLL_INTERVAL = 1000; // Check GitHub every 1 second for sub-second sync
 
         let PERSONAL_ACCESS_TOKEN = "";
 
@@ -453,7 +453,6 @@
             startPolling();
         };
 
-        // Real-time background sync polling
         function startPolling() {
             if (pollTimer) clearInterval(pollTimer);
             pollTimer = setInterval(pollGitHub, POLL_INTERVAL);
@@ -464,7 +463,11 @@
             pollTimer = null;
         }
 
-        // Auto pause polling on tab blur to save battery/bandwidth
+        // Instant fetch on window focus or tab visibility change
+        window.addEventListener("focus", () => {
+            pollGitHub();
+        });
+
         document.addEventListener("visibilitychange", () => {
             if (document.hidden) {
                 stopPolling();
@@ -476,7 +479,7 @@
 
         async function pollGitHub() {
             // Pause polling while local user updates are actively pushing or queued
-            if (isSyncing || syncPending || (Date.now() - lastLocalActionTime < 1500)) return;
+            if (isSyncing || syncPending || (Date.now() - lastLocalActionTime < 1000)) return;
 
             try {
                 const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
@@ -560,7 +563,7 @@
             if (syncTimer) clearTimeout(syncTimer);
             syncTimer = setTimeout(() => {
                 processSyncQueue();
-            }, 400);
+            }, 150); // Reduced from 400ms to 150ms for near-instant outbound commits
         }
 
         async function processSyncQueue() {
