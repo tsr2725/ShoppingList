@@ -7,7 +7,7 @@
   {
     "id": "id-1794306473332-jse5x",
     "name": "Butter spread low",
-    "completed": false
+    "completed": true
   },
   {
     "id": "id-1794306474788-hgro2",
@@ -17,6 +17,6 @@
   {
     "id": "id-1794306478443-vj12n",
     "name": "Bread",
-    "completed": false
+    "completed": true
   }
 ]
