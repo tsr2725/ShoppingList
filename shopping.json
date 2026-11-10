@@ -17,11 +17,11 @@
   {
     "id": "id-1794307209598-p01m7",
     "name": "Butter spread normal",
-    "completed": false
+    "completed": true
   },
   {
     "id": "id-1794307213487-tksb9",
     "name": "Milk",
-    "completed": false
+    "completed": true
   }
 ]
