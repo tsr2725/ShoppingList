@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Shopping List</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            text-align: center;
+            max-width: 320px;
+            width: 90%;
+        }
+        h2 { margin-top: 0; font-size: 22px; color: #111; }
+        p { color: #666; font-size: 14px; margin-bottom: 24px; }
+        button {
+            background-color: #24292e;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        button:active { background-color: #444d56; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .status { margin-top: 16px; font-size: 13px; font-weight: 500; }
+        .success { color: #28a745; }
+        .error { color: #d73a49; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Shopping List</h2>
+        <p>Tap below to add <strong>Milk</strong> via GitHub.</p>
+        
+        <button id="addBtn" onclick="addMilkToGitHub()">Add Milk</button>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        // CONFIGURATION: Fill in your GitHub details here
+        const GITHUB_USERNAME = "YOUR_GITHUB_USERNAME";
+        const REPO_NAME = "YOUR_REPO_NAME";
+        const PERSONAL_ACCESS_TOKEN = "YOUR_GITHUB_PAT_TOKEN"; // Classic PAT with 'repo' scope
+        const FILE_PATH = "shopping.txt";
+
+        async function addMilkToGitHub() {
+            const btn = document.getElementById('addBtn');
+            const status = document.getElementById('status');
+
+            btn.disabled = true;
+            btn.innerText = "Adding...";
+            status.innerText = "";
+
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${FILE_PATH}`;
+
+            try {
+                // 1. Get the current file content and SHA (required by GitHub API to update files)
+                let sha = "";
+                let currentContent = "";
+                
+                const getRes = await fetch(apiUrl, {
+                    headers: { "Authorization": `token ${PERSONAL_ACCESS_TOKEN}` }
+                });
+
+                if (getRes.ok) {
+                    const fileData = await getRes.json();
+                    sha = fileData.sha;
+                    // Decode existing content from Base64
+                    currentContent = decodeURIComponent(escape(atob(fileData.content)));
+                }
+
+                // 2. Append "Milk" to the list
+                const updatedContent = currentContent + "\nMilk";
+                const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)));
+
+                // 3. Commit the updated file back to GitHub via API
+                const putRes = await fetch(apiUrl, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `token ${PERSONAL_ACCESS_TOKEN}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: "Add Milk via QR code web app",
+                        content: encodedContent,
+                        sha: sha // Required if file already exists
+                    })
+                });
+
+                if (putRes.ok) {
+                    btn.innerText = "Added!";
+                    status.className = "status success";
+                    status.innerText = "✓ Milk added to GitHub repository!";
+                } else {
+                    throw new Error("Failed to commit update.");
+                }
+
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerText = "Add Milk";
+                    status.innerText = "";
+                }, 3000);
+
+            } catch (err) {
+                console.error(err);
+                btn.disabled = false;
+                btn.innerText = "Add Milk";
+                status.className = "status error";
+                status.innerText = "Error adding item.";
+            }
+        }
+    </script>
+</body>
+</html>
