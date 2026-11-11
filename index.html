@@ -13,6 +13,9 @@
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 
+    <!-- CryptoJS Library for Safe Passphrase Decryption -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
     <!-- Dynamic Theme-Matched Icon Generator -->
     <script>
         function updateDynamicIcon() {
@@ -91,7 +94,7 @@
             --menu-border: rgba(0, 0, 0, 0.08);
             --menu-shadow: 0 16px 38px rgba(0, 0, 0, 0.18);
             --menu-hover: rgba(0, 0, 0, 0.04);
-            --selected-row-bg: rgba(191, 161, 95, 0.12);
+            --selected-row-bg: rgba(0, 0, 0, 0.06);
             --bottom-bar-bg: rgba(250, 250, 250, 0.88);
             --bottom-bar-border: rgba(0, 0, 0, 0.12);
             --selection-blue: #007aff;
@@ -100,7 +103,7 @@
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-color: #000000;
-                --card-bg: #1c1c1e;
+                --card-bg: #000000;
                 --card-border: #2c2c2e;
                 --text-color: #f2f2f7;
                 --text-muted: #8e8e93;
@@ -118,613 +121,113 @@
                 --menu-border: rgba(255, 255, 255, 0.12);
                 --menu-shadow: 0 16px 38px rgba(0, 0, 0, 0.6);
                 --menu-hover: rgba(255, 255, 255, 0.06);
-                --selected-row-bg: rgba(255, 255, 255, 0.1);
+                --selected-row-bg: rgba(120, 120, 128, 0.24);
                 --bottom-bar-bg: rgba(28, 28, 30, 0.88);
                 --bottom-bar-border: rgba(255, 255, 255, 0.15);
                 --selection-blue: #0a84ff;
             }
         }
 
-        html {
-            background-color: var(--bg-color);
-            height: 100%;
-        }
-
+        html { background-color: var(--bg-color); height: 100%; }
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
+            background-color: var(--bg-color); color: var(--text-color); margin: 0;
             padding: max(12px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(32px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            box-sizing: border-box;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box;
         }
 
-        .container {
-            width: 100%;
-            max-width: 560px;
-            padding-bottom: 90px;
-            box-sizing: border-box;
-            position: relative;
-        }
+        .container { width: 100%; max-width: 560px; padding-bottom: 90px; box-sizing: border-box; position: relative; }
+        .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; position: relative; z-index: 200; }
+        .header-title-box { display: flex; align-items: center; gap: 12px; }
+        .app-header-logo { height: 36px; width: auto; object-fit: contain; }
+        h1 { font-size: 34px; font-weight: 800; color: var(--accent-color); margin: 0; letter-spacing: -0.6px; }
 
-        /* iOS Reminders Header Navigation */
-        .nav-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            position: relative;
-            z-index: 200;
-        }
+        .header-pill { display: flex; align-items: center; background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 2px 6px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); }
+        .header-pill-btn { background: none; border: none; color: var(--accent-color); font-size: 16px; padding: 6px 10px; cursor: pointer; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+        .finish-select-btn { width: 32px; height: 32px; border-radius: 50%; background-color: var(--selection-blue); color: white; border: none; font-size: 16px; font-weight: 700; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3); }
 
-        .header-title-box {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .app-header-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: var(--badge-bg);
-            color: var(--accent-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-
-        h1 {
-            font-size: 34px;
-            font-weight: 800;
-            color: var(--accent-color);
-            margin: 0;
-            letter-spacing: -0.6px;
-        }
-
-        .header-pill {
-            display: flex;
-            align-items: center;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 2px 6px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        }
-
-        .header-pill-btn {
-            background: none;
-            border: none;
-            color: var(--accent-color);
-            font-size: 16px;
-            padding: 6px 10px;
-            cursor: pointer;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .finish-select-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: var(--selection-blue);
-            color: white;
-            border: none;
-            font-size: 16px;
-            font-weight: 700;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
-        }
-
-        /* Apple Reminders Floating Popover Menu */
         .popover-menu {
-            display: none;
-            position: absolute;
-            top: 44px;
-            right: 0;
-            width: 250px;
-            background: var(--menu-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--menu-border);
-            border-radius: 16px;
-            box-shadow: var(--menu-shadow);
-            padding: 6px 0;
-            z-index: 999;
-            animation: menuFadeIn 0.18s cubic-bezier(0.2, 0, 0, 1);
+            display: none; position: absolute; top: 44px; right: 0; width: 260px; max-height: 80vh; overflow-y: auto;
+            background: var(--menu-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--menu-border); border-radius: 16px; box-shadow: var(--menu-shadow); padding: 6px 0; z-index: 999; animation: menuFadeIn 0.18s cubic-bezier(0.2, 0, 0, 1);
         }
+        @keyframes menuFadeIn { from { opacity: 0; transform: scale(0.92) translateY(-8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-        @keyframes menuFadeIn {
-            from { opacity: 0; transform: scale(0.92) translateY(-8px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
+        .menu-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; font-size: 15px; font-weight: 500; color: var(--text-color); cursor: pointer; transition: background 0.15s ease; }
+        .menu-item:hover { background: var(--menu-hover); }
+        .menu-item-left { display: flex; align-items: center; gap: 12px; }
+        .menu-item-icon { font-size: 16px; width: 20px; text-align: center; color: var(--text-color); }
+        .menu-item-arrow { color: var(--text-muted); font-size: 13px; }
+        .menu-item.danger { color: var(--delete-hover); }
+        .menu-item.danger .menu-item-icon { color: var(--delete-hover); }
+        .menu-divider { height: 1px; background-color: var(--card-border); margin: 4px 0; }
+        .submenu-panel { display: none; padding-left: 8px; background: rgba(0, 0, 0, 0.02); border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border); }
 
-        .menu-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 16px;
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--text-color);
-            cursor: pointer;
-            transition: background 0.15s ease;
-        }
-
-        .menu-item:hover {
-            background: var(--menu-hover);
-        }
-
-        .menu-item-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .menu-item-icon {
-            font-size: 16px;
-            width: 20px;
-            text-align: center;
-            color: var(--text-color);
-        }
-
-        .menu-item-arrow {
-            color: var(--text-muted);
-            font-size: 13px;
-        }
-
-        .menu-item.danger {
-            color: var(--delete-hover);
-        }
-
-        .menu-item.danger .menu-item-icon {
-            color: var(--delete-hover);
-        }
-
-        .menu-divider {
-            height: 1px;
-            background-color: var(--card-border);
-            margin: 4px 0;
-        }
-
-        .submenu-panel {
-            display: none;
-            padding-left: 12px;
-            background: rgba(0, 0, 0, 0.02);
-            border-top: 1px solid var(--card-border);
-            border-bottom: 1px solid var(--card-border);
-        }
-
-        .list-card {
-            background: var(--card-bg);
-            border-radius: 14px;
-            border: 1px solid var(--card-border);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            padding: 8px 22px;
-            margin-top: 14px;
-            margin-bottom: 20px;
-            position: relative;
-        }
+        .list-container { width: 100%; margin-top: 14px; margin-bottom: 20px; }
+        .section-header { font-size: 20px; font-weight: 700; color: var(--text-color); margin: 22px 0 8px 4px; display: flex; justify-content: space-between; align-items: center; letter-spacing: -0.3px; }
+        .section-header:first-child { margin-top: 8px; }
 
         .item-row {
-            display: flex;
-            align-items: center;
-            padding: 16px 0;
-            border-bottom: 1px solid var(--item-border);
-            user-select: none;
-            touch-action: pan-y;
-            background: var(--card-bg);
-            transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease, opacity 0.2s ease;
-            position: relative;
-            will-change: transform;
-            border-radius: 8px;
+            display: flex; align-items: center; padding: 14px 12px; border-bottom: 1px solid var(--item-border);
+            user-select: none; touch-action: pan-y; background: transparent; transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease, opacity 0.2s ease;
+            position: relative; will-change: transform; border-radius: 12px; margin-bottom: 2px;
         }
+        .item-row.selected-item { background-color: var(--selected-row-bg) !important; }
+        .item-row.is-dragging { position: fixed; z-index: 1000; pointer-events: none; box-shadow: var(--drag-card-shadow); border-radius: 12px; padding: 14px 18px; background: var(--modal-bg); border: 1px solid var(--card-border); box-sizing: border-box; will-change: transform; transition: none !important; }
+        .item-row.drag-placeholder { opacity: 0 !important; pointer-events: none; }
 
-        .item-row:last-child {
-            border-bottom: none;
-        }
+        .radio-circle { width: 22px; height: 22px; border: 2px solid var(--circle-border); background-color: transparent; border-radius: 50%; margin-right: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; transition: all 0.2s ease; }
+        .radio-circle.checked { border-color: var(--accent-color); background-color: var(--accent-color); }
+        .radio-circle.checked::after { content: ""; width: 5px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 2px; }
 
-        .item-row.selected-item {
-            background-color: var(--selected-row-bg) !important;
-        }
+        .select-marker { width: 22px; height: 22px; border: 2px solid var(--circle-border); background-color: transparent; border-radius: 50%; margin-right: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s ease; }
+        .select-marker.is-selected { border-color: var(--selection-blue); background-color: var(--selection-blue); }
+        .select-marker.is-selected::after { content: ""; width: 5px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 2px; }
 
-        .item-row.is-dragging {
-            position: fixed;
-            z-index: 1000;
-            pointer-events: none;
-            box-shadow: var(--drag-card-shadow);
-            border-radius: 12px;
-            padding: 14px 18px;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            box-sizing: border-box;
-            will-change: transform;
-            transition: none !important;
-        }
+        .item-name { font-size: 17px; line-height: 1.4; font-weight: 400; color: var(--text-color); flex-grow: 1; word-break: break-word; cursor: pointer; padding-right: 8px; }
+        .item-name.completed { text-decoration: line-through; color: var(--text-muted); }
+        .qty-badge { display: inline-block; vertical-align: middle; font-size: 13px; font-weight: 600; color: var(--accent-color); background-color: var(--badge-bg); padding: 2px 8px; border-radius: 10px; margin-left: 6px; letter-spacing: -0.2px; white-space: nowrap; cursor: pointer; }
+        .item-name.completed .qty-badge { opacity: 0.5; background-color: rgba(142, 142, 147, 0.15); color: var(--text-muted); }
 
-        .item-row.drag-placeholder {
-            opacity: 0 !important;
-            pointer-events: none;
-        }
+        .action-btn { background: none; border: none; color: var(--circle-border); font-size: 20px; cursor: pointer; padding: 4px 6px; margin-left: 4px; border-radius: 4px; transition: color 0.2s ease; flex-shrink: 0; }
+        .action-btn.delete-btn:hover { color: var(--delete-hover); }
 
-        /* Checkbox & Selection Circle Styling */
-        .radio-circle {
-            width: 22px;
-            height: 22px;
-            border: 2px solid var(--circle-border);
-            background-color: transparent;
-            border-radius: 50%;
-            margin-right: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
+        .completed-section-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 4px 12px 4px; margin-top: 18px; border-top: 1px solid var(--item-border); font-size: 15px; font-weight: 600; color: var(--text-muted); cursor: pointer; user-select: none; transition: color 0.2s ease; }
+        .completed-section-header:hover { color: var(--accent-color); }
 
-        .radio-circle.checked {
-            border-color: var(--accent-color);
-            background-color: var(--accent-color);
-        }
-
-        .radio-circle.checked::after {
-            content: "";
-            width: 5px;
-            height: 9px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
-            margin-bottom: 2px;
-        }
-
-        /* Selection Mode Marker Circle (Solid Blue Checkmark or Empty Outline) */
-        .select-marker {
-            width: 22px;
-            height: 22px;
-            border: 2px solid var(--circle-border);
-            background-color: transparent;
-            border-radius: 50%;
-            margin-right: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: all 0.2s ease;
-        }
-
-        .select-marker.is-selected {
-            border-color: var(--selection-blue);
-            background-color: var(--selection-blue);
-        }
-
-        .select-marker.is-selected::after {
-            content: "";
-            width: 5px;
-            height: 9px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
-            margin-bottom: 2px;
-        }
-
-        .item-name {
-            font-size: 17px;
-            line-height: 1.4;
-            font-weight: 400;
-            color: var(--text-color);
-            flex-grow: 1;
-            word-break: break-word;
-            cursor: pointer;
-            padding-right: 8px;
-        }
-
-        .item-name:hover {
-            opacity: 0.85;
-        }
-
-        .item-name.completed {
-            text-decoration: line-through;
-            color: var(--text-muted);
-        }
-
-        .qty-badge {
-            display: inline-block;
-            vertical-align: middle;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--accent-color);
-            background-color: var(--badge-bg);
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-left: 6px;
-            letter-spacing: -0.2px;
-            white-space: nowrap;
-            cursor: pointer;
-        }
-
-        .item-name.completed .qty-badge {
-            opacity: 0.5;
-            background-color: rgba(142, 142, 147, 0.15);
-            color: var(--text-muted);
-        }
-
-        .action-btn {
-            background: none;
-            border: none;
-            color: var(--circle-border);
-            font-size: 20px;
-            cursor: pointer;
-            padding: 4px 6px;
-            margin-left: 4px;
-            border-radius: 4px;
-            transition: color 0.2s ease;
-            flex-shrink: 0;
-        }
-
-        .action-btn.delete-btn:hover {
-            color: var(--delete-hover);
-        }
-
-        .completed-section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 0 12px 0;
-            margin-top: 6px;
-            border-top: 1px solid var(--card-border);
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-            user-select: none;
-            transition: color 0.2s ease;
-        }
-
-        .completed-section-header:hover {
-            color: var(--accent-color);
-        }
-
-        /* Apple Reminders Translucent Bottom Action Bar */
         .bottom-action-bar {
-            display: none;
-            position: fixed;
-            bottom: calc(20px + env(safe-area-inset-bottom));
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 460px;
-            height: 54px;
-            background: var(--bottom-bar-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--bottom-bar-border);
-            border-radius: 28px;
-            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
-            justify-content: space-around;
-            align-items: center;
-            z-index: 900;
-            padding: 0 10px;
-            box-sizing: border-box;
+            display: none; position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+            width: calc(100% - 40px); max-width: 460px; height: 54px; background: var(--bottom-bar-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--bottom-bar-border); border-radius: 28px; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+            justify-content: space-around; align-items: center; z-index: 900; padding: 0 10px; box-sizing: border-box;
         }
+        .bottom-bar-btn { background: none; border: none; color: var(--accent-color); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; transition: opacity 0.2s ease, transform 0.15s ease; }
+        .bottom-bar-btn:active { transform: scale(0.9); }
+        .bottom-bar-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        .bottom-bar-btn {
-            background: none;
-            border: none;
-            color: var(--accent-color);
-            font-size: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            transition: opacity 0.2s ease, transform 0.15s ease;
-        }
+        .section-picker-popover { display: none; position: fixed; bottom: calc(84px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: calc(100% - 60px); max-width: 320px; max-height: 60vh; overflow-y: auto; background: var(--menu-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--menu-border); border-radius: 16px; box-shadow: var(--menu-shadow); padding: 8px 0; z-index: 950; }
+        .status { text-align: center; margin-top: 14px; font-size: 14px; font-weight: 500; color: var(--text-muted); min-height: 20px; }
+        .empty-state { color: var(--text-muted); text-align: center; padding: 28px 0; font-style: italic; }
 
-        .bottom-bar-btn:active {
-            transform: scale(0.9);
-        }
-
-        .bottom-bar-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        /* Section Selection Popup Menu */
-        .section-picker-popover {
-            display: none;
-            position: fixed;
-            bottom: calc(84px + env(safe-area-inset-bottom));
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 60px);
-            max-width: 320px;
-            background: var(--menu-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--menu-border);
-            border-radius: 16px;
-            box-shadow: var(--menu-shadow);
-            padding: 8px 0;
-            z-index: 950;
-        }
-
-        .status {
-            text-align: center;
-            margin-top: 14px;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-muted);
-            min-height: 20px;
-        }
-
-        .empty-state {
-            color: var(--text-muted);
-            text-align: center;
-            padding: 28px 0;
-            font-style: italic;
-        }
-
-        .fab {
-            position: fixed;
-            bottom: calc(30px + env(safe-area-inset-bottom));
-            right: calc(30px + env(safe-area-inset-right));
-            width: 60px;
-            height: 60px;
-            background-color: var(--accent-color);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            box-shadow: 0 4px 16px rgba(191, 161, 95, 0.4);
-            cursor: pointer;
-            border: none;
-            transition: transform 0.2s, opacity 0.2s;
-            z-index: 99;
-        }
-
+        .fab { position: fixed; bottom: calc(30px + env(safe-area-inset-bottom)); right: calc(30px + env(safe-area-inset-right)); width: 60px; height: 60px; background-color: var(--accent-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 4px 16px rgba(191, 161, 95, 0.4); cursor: pointer; border: none; transition: transform 0.2s, opacity 0.2s; z-index: 99; }
         .fab:active { transform: scale(0.95); }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .modal-content {
-            background: var(--modal-bg);
-            padding: 24px;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-            text-align: center;
-        }
-
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: var(--modal-bg); padding: 24px; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); text-align: center; }
         .modal-content h3 { margin-top: 0; color: var(--accent-color); }
 
-        .modal-input {
-            width: 100%;
-            padding: 12px;
-            margin: 12px 0;
-            border: 1px solid var(--input-border);
-            background: var(--input-bg);
-            color: var(--text-color);
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
+        .modal-input { width: 100%; padding: 12px; margin: 12px 0; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-color); border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        .qty-picker-container { margin: 12px 0 18px 0; display: flex; align-items: center; justify-content: space-between; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; padding: 8px 14px; }
+        .qty-label { font-size: 15px; font-weight: 600; color: var(--text-color); }
+        .qty-picker-controls { display: flex; align-items: center; gap: 10px; }
+        .qty-btn { background-color: var(--accent-color); color: white; border: none; width: 34px; height: 34px; border-radius: 50%; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; user-select: none; }
+        .qty-btn:active { opacity: 0.8; }
+        .qty-select-wheel { font-size: 17px; font-weight: 700; color: var(--accent-color); background: var(--badge-bg); border: 1px solid var(--accent-color); padding: 6px 14px; cursor: pointer; text-align: center; border-radius: 8px; outline: none; }
+        .modal-btn { background-color: var(--accent-color); color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 8px; }
+        .modal-btn.secondary { background-color: var(--secondary-btn-bg); color: var(--secondary-btn-text); margin-top: 10px; }
 
-        .qty-picker-container {
-            margin: 12px 0 18px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--input-bg);
-            border: 1px solid var(--input-border);
-            border-radius: 8px;
-            padding: 8px 14px;
-        }
-
-        .qty-label {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-color);
-        }
-
-        .qty-picker-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .qty-btn {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            user-select: none;
-        }
-
-        .qty-btn:active {
-            opacity: 0.8;
-        }
-
-        .qty-select-wheel {
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--accent-color);
-            background: var(--badge-bg);
-            border: 1px solid var(--accent-color);
-            padding: 6px 14px;
-            cursor: pointer;
-            text-align: center;
-            border-radius: 8px;
-            outline: none;
-        }
-
-        .modal-btn {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 8px;
-        }
-
-        .modal-btn.secondary {
-            background-color: var(--secondary-btn-bg);
-            color: var(--secondary-btn-text);
-            margin-top: 10px;
-        }
-
-        #reader { 
-            width: 100%; 
-            aspect-ratio: 1 / 1;
-            border-radius: 12px; 
-            overflow: hidden; 
-            margin-bottom: 12px;
-            background: #000000;
-        }
-
-        #reader video {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
-        }
+        #reader { width: 100%; aspect-ratio: 1 / 1; border-radius: 12px; overflow: hidden; margin-bottom: 12px; background: #000000; }
+        #reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
     </style>
 </head>
 <body>
@@ -733,7 +236,7 @@
         <!-- Header Navigation Bar -->
         <div class="nav-header">
             <div class="header-title-box">
-                <div class="app-header-icon">🛒</div>
+                <img src="logo.png" alt="Logo" class="app-header-logo" onerror="this.style.display='none'">
                 <h1 id="mainTitle">Groceries</h1>
             </div>
 
@@ -760,11 +263,11 @@
                     <span class="menu-item-arrow" id="sectionsArrow">›</span>
                 </div>
                 <div class="submenu-panel" id="sectionsSubmenu">
-                    <div class="menu-item" onclick="alert('Section features ready for next step!')">
-                        <span style="padding-left: 24px;">New Section</span>
+                    <div class="menu-item" onclick="alert('New section creation ready!')">
+                        <span style="padding-left: 20px;">New Section</span>
                     </div>
-                    <div class="menu-item" onclick="alert('Section features ready for next step!')">
-                        <span style="padding-left: 24px;">Edit Sections</span>
+                    <div class="menu-item" onclick="alert('Edit sections ready!')">
+                        <span style="padding-left: 20px;">Edit Sections</span>
                     </div>
                 </div>
 
@@ -777,10 +280,10 @@
                 </div>
                 <div class="submenu-panel" id="sortSubmenu">
                     <div class="menu-item" onclick="setSortMode('manual')">
-                        <span style="padding-left: 24px;" id="sortManualCheck">✓ Manual</span>
+                        <span style="padding-left: 20px;" id="sortManualCheck">✓ Manual</span>
                     </div>
                     <div class="menu-item" onclick="setSortMode('title')">
-                        <span style="padding-left: 24px;" id="sortTitleCheck">Title</span>
+                        <span style="padding-left: 20px;" id="sortTitleCheck">Title</span>
                     </div>
                 </div>
 
@@ -825,7 +328,7 @@
             </div>
         </div>
         
-        <div class="list-card" id="listContainer">
+        <div class="list-container" id="listContainer">
             <div class="empty-state" id="loadingText">Loading groceries list...</div>
         </div>
         
@@ -834,44 +337,43 @@
 
     <!-- Apple Reminders Floating Bottom Action Bar for Selection Mode -->
     <div class="bottom-action-bar" id="bottomActionBar">
-        <!-- 1. Complete Selected Button -->
         <button class="bottom-bar-btn" id="btnCompleteSelected" onclick="completeSelectedItems()" title="Complete Selected">
             <div class="radio-circle checked" style="margin-right: 0;"></div>
         </button>
 
-        <!-- 2. Uncomplete Selected Button -->
         <button class="bottom-bar-btn" id="btnUncompleteSelected" onclick="uncompleteSelectedItems()" title="Uncomplete Selected">
             <div class="radio-circle" style="margin-right: 0;"></div>
         </button>
 
-        <!-- 3. Move to Section Button -->
         <button class="bottom-bar-btn" id="btnMoveSection" onclick="toggleSectionPickerPopover(event)" title="Move Section">
             <span style="font-size: 22px;">☰</span>
         </button>
 
-        <!-- 4. Delete Selected Button -->
         <button class="bottom-bar-btn" id="btnDeleteSelected" onclick="deleteSelectedItems()" title="Delete Selected">
             <span>🗑</span>
         </button>
 
-        <!-- 5. Three-dot Menu -->
         <button class="bottom-bar-btn" onclick="togglePopoverMenu(event)" title="More Options">
             <span>•••</span>
         </button>
     </div>
 
     <!-- Section Picker Popover Menu -->
-    <div class="section-picker-popover" id="sectionPickerPopover">
-        <div class="menu-item" onclick="moveSelectedToSection('Dairy, Eggs and Cheese')"><span>Dairy, Eggs and Cheese</span></div>
-        <div class="menu-item" onclick="moveSelectedToSection('Fruit and Veg')"><span>Fruit and Veg</span></div>
-        <div class="menu-item" onclick="moveSelectedToSection('Spices and Seasonings')"><span>Spices and Seasonings</span></div>
-        <div class="menu-item" onclick="moveSelectedToSection('Snacks and Lollies')"><span>Snacks and Lollies</span></div>
-        <div class="menu-item" onclick="moveSelectedToSection('Cleaning')"><span>Cleaning</span></div>
-        <div class="menu-divider"></div>
-        <div class="menu-item" onclick="moveSelectedToSection('New Section')"><span>New Section with Selection</span></div>
-    </div>
+    <div class="section-picker-popover" id="sectionPickerPopover"></div>
 
     <button class="fab" id="fabBtn" onclick="openModal()">+</button>
+
+    <!-- Password Gatekeeper Modal -->
+    <div class="modal" id="passwordModal">
+        <div class="modal-content">
+            <h3>Welcome to Groceries</h3>
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">
+                Enter the household passphrase to unlock list sync & AI categorization.
+            </p>
+            <input type="password" id="passphraseInput" class="modal-input" placeholder="Enter Passphrase" onkeydown="if(event.key==='Enter') unlockWithPassphrase()">
+            <button class="modal-btn" onclick="unlockWithPassphrase()">Unlock App</button>
+        </div>
+    </div>
 
     <!-- Add Product Modal -->
     <div class="modal" id="scanModal">
@@ -918,6 +420,12 @@
     </div>
 
     <script>
+        // -----------------------------------------------------------------
+        // PASTE YOUR GENERATED ENCRYPTED STRING BETWEEN THE QUOTES BELOW:
+        // -----------------------------------------------------------------
+        const ENCRYPTED_KEYS = "U2FsdGVkX18gCBrbMYPHhrrHsy05U3tGFbETE9hFZ+d+O9ODlX1z/j495mx3AAOO1QzC/PPhrB6BRbpbvG+5ddnu1kxMYauvVIr+8Vvw927QL3Fuvl+wzI/CoIkfr5k/uq1IP13x0uitdd3GJN29mY6WOGzJxyA4Ag7ehCLwyZUgzlyB91f6htuVcfrEAIYB";
+        // -----------------------------------------------------------------
+
         const GITHUB_USERNAME = "tsr2725";
         const REPO_NAME = "ShoppingList";
         const FILE_PATH = "shopping.json";
@@ -925,19 +433,66 @@
 
         let PERSONAL_ACCESS_TOKEN = "";
 
-        function getPAT(forceReset = false) {
-            if (forceReset) {
-                localStorage.removeItem("gh_shopping_pat");
-            }
+        const ALL_SECTIONS = [
+            "Dairy, Eggs and Cheese", "Fruit and Veg", "Spices and Seasonings", "Snacks and Lollies",
+            "Cleaning", "Baby Care", "Bakery", "Baking Items", "Beverages", "Breads and Cereals",
+            "Canned Foods and Soups", "Coffee and Tea", "Deli", "Frozen Foods", "Household Items",
+            "Meat", "Oils and Dressings", "Pasta, Rice and Beans", "Personal Care and Health",
+            "Pet Care", "Sauces and Condiments", "Seafood", "Wine, Beer and Spirits", "Others"
+        ];
+
+        const LOCAL_CATEGORY_MAP = {
+            "Snacks and Lollies": ["dried mango", "chips", "crisps", "snack", "lollies", "candy", "chocolate", "popcorn", "nuts", "biscuit", "cookie", "pretzels", "crackers", "sweets"],
+            "Dairy, Eggs and Cheese": ["milk", "cheese", "butter", "ghee", "yogurt", "yoghurt", "dahi", "cream", "egg", "eggs", "paneer", "curd"],
+            "Fruit and Veg": ["mango", "apple", "apples", "banana", "bananas", "cucumber", "tomato", "tomatoes", "onion", "onions", "potato", "potatoes", "kheera", "spinach", "lettuce", "berry", "berries", "grape", "grapes", "lemon", "lime", "orange", "garlic", "ginger"],
+            "Spices and Seasonings": ["haldi", "turmeric", "salt", "pepper", "spice", "spices", "chili", "chilli", "cumin", "coriander", "paprika", "seasoning", "masala", "cinnamon"],
+            "Cleaning": ["soap", "detergent", "bleach", "sponge", "cleaner", "wipes", "dishwash", "paper towel", "trash bag"],
+            "Bakery": ["bread", "bun", "croissant", "bagel", "muffin", "loaf"],
+            "Breads and Cereals": ["cereal", "oats", "granola", "cornflakes"],
+            "Beverages": ["juice", "soda", "water", "coke", "drink", "sparkling"],
+            "Coffee and Tea": ["coffee", "tea", "chai", "espresso", "matcha"],
+            "Meat": ["chicken", "beef", "pork", "lamb", "bacon", "steak", "sausage", "meat"],
+            "Seafood": ["fish", "salmon", "shrimp", "prawns", "tuna", "crab"],
+            "Pasta, Rice and Beans": ["rice", "pasta", "spaghetti", "noodles", "beans", "lentils", "dal"],
+            "Sauces and Condiments": ["ketchup", "mayo", "mayonnaise", "mustard", "sauce", "soy sauce", "vinegar"],
+            "Household Items": ["foil", "ziploc", "napkins", "batteries", "lightbulb"],
+            "Personal Care and Health": ["shampoo", "toothpaste", "toothbrush", "deodorant", "lotion", "vitamins"],
+            "Pet Care": ["cat food", "dog food", "pet treats", "litter"],
+            "Frozen Foods": ["ice cream", "frozen pizza", "frozen peas", "frozen veggies"],
+            "Wine, Beer and Spirits": ["wine", "beer", "whiskey", "vodka", "cider", "alcohol"]
+        };
+
+        function checkAccessKeys() {
             let token = localStorage.getItem("gh_shopping_pat");
-            if (!token) {
-                token = prompt("Enter your GitHub Personal Access Token (starts with ghp_ or github_pat_):");
-                if (token) {
-                    token = token.trim();
-                    localStorage.setItem("gh_shopping_pat", token);
-                }
+            let geminiKey = localStorage.getItem("gemini_api_key");
+
+            if (!token || !geminiKey) {
+                document.getElementById("passwordModal").style.display = "flex";
+                return false;
             }
-            return token;
+            PERSONAL_ACCESS_TOKEN = token;
+            return true;
+        }
+
+        function unlockWithPassphrase() {
+            const userPass = document.getElementById("passphraseInput").value.trim();
+            if (!userPass) return;
+
+            try {
+                const bytes = CryptoJS.AES.decrypt(ENCRYPTED_KEYS, userPass);
+                const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+
+                if (decryptedData.pat && decryptedData.gemini) {
+                    localStorage.setItem("gh_shopping_pat", decryptedData.pat);
+                    localStorage.setItem("gemini_api_key", decryptedData.gemini);
+                    document.getElementById("passwordModal").style.display = "none";
+                    location.reload();
+                } else {
+                    alert("Incorrect passphrase. Please try again.");
+                }
+            } catch (e) {
+                alert("Incorrect passphrase. Please try again.");
+            }
         }
 
         const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${FILE_PATH}`;
@@ -957,11 +512,9 @@
         let lastLocalActionTime = 0;
         let editingItemId = null;
 
-        // 2-Second Debounced Completed Batch Move Logic
         const pendingMoveIds = new Set();
         let batchMoveTimer = null;
 
-        // 60fps Drag & Drop / Drag Selection State
         let isDragging = false;
         let activeDragIndex = null;
         let currentTargetIndex = null;
@@ -997,6 +550,39 @@
             };
         }
 
+        async function categorizeItemName(rawName) {
+            const lower = rawName.toLowerCase().trim();
+
+            if (lower.includes("dried mango")) return "Snacks and Lollies";
+
+            for (const [section, keywords] of Object.entries(LOCAL_CATEGORY_MAP)) {
+                for (const kw of keywords) {
+                    if (lower.includes(kw)) return section;
+                }
+            }
+
+            const geminiKey = localStorage.getItem("gemini_api_key");
+            if (geminiKey) {
+                try {
+                    const promptText = `Categorize the grocery item "${rawName}" into exactly ONE of these categories: ${ALL_SECTIONS.join(", ")}. Reply with ONLY the category name.`;
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        const answer = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+                        if (answer && ALL_SECTIONS.includes(answer)) {
+                            return answer;
+                        }
+                    }
+                } catch (e) { console.log("API categorization fallback error:", e); }
+            }
+
+            return "Others";
+        }
+
         function decodeContent(b64) {
             const binString = atob(b64.replace(/\s/g, ''));
             const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0));
@@ -1010,17 +596,17 @@
         }
 
         function handleAuthError() {
-            alert("Invalid GitHub Token (Bad credentials). Please enter a valid Personal Access Token.");
-            PERSONAL_ACCESS_TOKEN = getPAT(true);
-            if (PERSONAL_ACCESS_TOKEN) {
-                location.reload();
-            }
+            alert("Invalid GitHub Token. Please check credentials.");
+            localStorage.removeItem("gh_shopping_pat");
+            localStorage.removeItem("gemini_api_key");
+            location.reload();
         }
 
         window.onload = async function() {
             populateQtyDropdown();
-            PERSONAL_ACCESS_TOKEN = getPAT();
-            if (!PERSONAL_ACCESS_TOKEN) return;
+            populateSectionPickerPopover();
+
+            if (!checkAccessKeys()) return;
 
             const urlParams = new URLSearchParams(window.location.search);
             const rawItem = urlParams.get('item');
@@ -1049,19 +635,25 @@
         function populateQtyDropdown() {
             const editSelect = document.getElementById('editItemQty');
             const addSelect = document.getElementById('addModalQty');
-            editSelect.innerHTML = '';
-            addSelect.innerHTML = '';
+            editSelect.innerHTML = ''; addSelect.innerHTML = '';
             for (let i = 1; i <= 99; i++) {
-                const opt1 = document.createElement('option');
-                opt1.value = i;
-                opt1.textContent = `x${i}`;
+                const opt1 = document.createElement('option'); opt1.value = i; opt1.textContent = `x${i}`;
                 editSelect.appendChild(opt1);
-
-                const opt2 = document.createElement('option');
-                opt2.value = i;
-                opt2.textContent = `x${i}`;
+                const opt2 = document.createElement('option'); opt2.value = i; opt2.textContent = `x${i}`;
                 addSelect.appendChild(opt2);
             }
+        }
+
+        function populateSectionPickerPopover() {
+            const popover = document.getElementById('sectionPickerPopover');
+            popover.innerHTML = '';
+            ALL_SECTIONS.forEach(sec => {
+                const item = document.createElement('div');
+                item.className = 'menu-item';
+                item.onclick = () => moveSelectedToSection(sec);
+                item.innerHTML = `<span>${sec}</span>`;
+                popover.appendChild(item);
+            });
         }
 
         function togglePopoverMenu(e) {
@@ -1075,7 +667,6 @@
             el.style.display = el.style.display === 'block' ? 'none' : 'block';
         }
 
-        /* --- Apple Reminders Selection Mode --- */
         function toggleSelectMode() {
             isSelectMode = !isSelectMode;
             selectedItemIds.clear();
@@ -1200,7 +791,13 @@
 
         function moveSelectedToSection(sectionName) {
             document.getElementById('sectionPickerPopover').style.display = 'none';
-            alert(`Moved ${selectedItemIds.size} item(s) to section: ${sectionName}`);
+            currentItems.forEach(i => {
+                if (selectedItemIds.has(i.id)) {
+                    i.section = sectionName;
+                }
+            });
+            renderList();
+            scheduleSync(`Moved items to ${sectionName}`);
         }
 
         function toggleShowCompletedFromMenu() {
@@ -1265,17 +862,10 @@
             pollTimer = null;
         }
 
-        window.addEventListener("focus", () => {
-            pollGitHub();
-        });
-
+        window.addEventListener("focus", () => { pollGitHub(); });
         document.addEventListener("visibilitychange", () => {
-            if (document.hidden) {
-                stopPolling();
-            } else {
-                pollGitHub();
-                startPolling();
-            }
+            if (document.hidden) stopPolling();
+            else { pollGitHub(); startPolling(); }
         });
 
         async function pollGitHub() {
@@ -1286,10 +876,7 @@
                     headers: { "Authorization": `Bearer ${PERSONAL_ACCESS_TOKEN}` }
                 });
 
-                if (getRes.status === 401) {
-                    handleAuthError();
-                    return;
-                }
+                if (getRes.status === 401) { handleAuthError(); return; }
 
                 if (getRes.ok) {
                     const fileData = await getRes.json();
@@ -1310,10 +897,7 @@
                     headers: { "Authorization": `Bearer ${PERSONAL_ACCESS_TOKEN}` }
                 });
 
-                if (getRes.status === 401) {
-                    handleAuthError();
-                    return;
-                }
+                if (getRes.status === 401) { handleAuthError(); return; }
 
                 if (getRes.ok) {
                     const fileData = await getRes.json();
@@ -1340,7 +924,8 @@
                     return parsed.map(item => ({
                         ...item,
                         name: formatItemName(item.name),
-                        quantity: parseInt(item.quantity, 10) || 1
+                        quantity: parseInt(item.quantity, 10) || 1,
+                        section: item.section || "Others"
                     }));
                 }
             } catch (e) {
@@ -1353,7 +938,8 @@
                             id: 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
                             name: parsedItem.name,
                             quantity: parsedItem.quantity,
-                            completed: false
+                            completed: false,
+                            section: "Others"
                         };
                     });
             }
@@ -1367,19 +953,13 @@
             statusDiv.innerText = "Pending sync...";
 
             if (syncTimer) clearTimeout(syncTimer);
-            syncTimer = setTimeout(() => {
-                processSyncQueue();
-            }, 150);
+            syncTimer = setTimeout(() => { processSyncQueue(); }, 150);
         }
 
         async function processSyncQueue() {
-            if (isSyncing) {
-                syncPending = true;
-                return;
-            }
+            if (isSyncing) { syncPending = true; return; }
 
-            isSyncing = true;
-            syncPending = false;
+            isSyncing = true; syncPending = false;
             const statusDiv = document.getElementById('status');
             statusDiv.innerText = "Syncing...";
 
@@ -1388,11 +968,7 @@
                     const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
                         headers: { "Authorization": `Bearer ${PERSONAL_ACCESS_TOKEN}` }
                     });
-                    if (getRes.status === 401) {
-                        handleAuthError();
-                        isSyncing = false;
-                        return;
-                    }
+                    if (getRes.status === 401) { handleAuthError(); isSyncing = false; return; }
                     if (getRes.ok) {
                         const fileData = await getRes.json();
                         currentSha = fileData.sha;
@@ -1400,10 +976,7 @@
                 }
 
                 const encodedContent = encodeContent(JSON.stringify(currentItems, null, 2));
-                const payload = {
-                    message: lastCommitMsg,
-                    content: encodedContent
-                };
+                const payload = { message: lastCommitMsg, content: encodedContent };
                 if (currentSha) payload.sha = currentSha;
 
                 const putRes = await fetch(apiUrl, {
@@ -1415,11 +988,7 @@
                     body: JSON.stringify(payload)
                 });
 
-                if (putRes.status === 401) {
-                    handleAuthError();
-                    isSyncing = false;
-                    return;
-                }
+                if (putRes.status === 401) { handleAuthError(); isSyncing = false; return; }
 
                 if (putRes.ok) {
                     const resData = await putRes.json();
@@ -1438,10 +1007,7 @@
                 statusDiv.innerText = "Network error syncing with GitHub.";
             } finally {
                 isSyncing = false;
-                if (syncPending) {
-                    syncPending = false;
-                    processSyncQueue();
-                }
+                if (syncPending) { syncPending = false; processSyncQueue(); }
             }
         }
 
@@ -1460,40 +1026,56 @@
             if (activeItems.length === 0 && completedItems.length > 0 && !showCompleted) {
                 container.innerHTML = '<div class="empty-state">All items completed! Tap menu to show.</div>';
             } else {
-                activeItems.forEach((item) => {
-                    const realIndex = currentItems.findIndex(i => i.id === item.id);
-                    const qtyVal = item.quantity || 1;
-                    const isCompleted = item.completed;
-                    const isSelected = selectedItemIds.has(item.id);
+                const sectionGroups = {};
+                activeItems.forEach(item => {
+                    const sec = item.section || "Others";
+                    if (!sectionGroups[sec]) sectionGroups[sec] = [];
+                    sectionGroups[sec].push(item);
+                });
 
-                    const qtyHtml = isSelectMode 
-                        ? `<span class="qty-badge">x${qtyVal}</span>` 
-                        : `<span class="qty-badge" onclick="event.stopPropagation(); openEditModal('${item.id}', true)">x${qtyVal}</span>`;
+                ALL_SECTIONS.forEach(sec => {
+                    if (sectionGroups[sec] && sectionGroups[sec].length > 0) {
+                        const secHeader = document.createElement('div');
+                        secHeader.className = 'section-header';
+                        secHeader.innerText = sec;
+                        container.appendChild(secHeader);
 
-                    const circleMarker = isSelectMode
-                        ? `<div class="select-marker ${isSelected ? 'is-selected' : ''}"></div>`
-                        : `<div class="radio-circle ${isCompleted ? 'checked' : ''}" onclick="event.stopPropagation(); toggleItem('${item.id}')"></div>`;
+                        sectionGroups[sec].forEach(item => {
+                            const realIndex = currentItems.findIndex(i => i.id === item.id);
+                            const qtyVal = item.quantity || 1;
+                            const isCompleted = item.completed;
+                            const isSelected = selectedItemIds.has(item.id);
 
-                    const row = document.createElement('div');
-                    row.className = `item-row ${isSelected ? 'selected-item' : ''}`;
-                    row.dataset.index = realIndex;
-                    row.dataset.id = item.id;
+                            const qtyHtml = isSelectMode 
+                                ? `<span class="qty-badge">x${qtyVal}</span>` 
+                                : `<span class="qty-badge" onclick="event.stopPropagation(); openEditModal('${item.id}', true)">x${qtyVal}</span>`;
 
-                    if (isSelectMode) {
-                        row.onclick = () => toggleItemSelection(item.id);
-                        row.ontouchstart = (e) => startDragSelection(e, item.id);
-                        row.onmousedown = (e) => startDragSelection(e, item.id);
-                    } else {
-                        row.addEventListener('mousedown', (e) => initItemDrag(e, realIndex));
-                        row.addEventListener('touchstart', (e) => initItemDrag(e, realIndex), { passive: false });
+                            const circleMarker = isSelectMode
+                                ? `<div class="select-marker ${isSelected ? 'is-selected' : ''}"></div>`
+                                : `<div class="radio-circle ${isCompleted ? 'checked' : ''}" onclick="event.stopPropagation(); toggleItem('${item.id}')"></div>`;
+
+                            const row = document.createElement('div');
+                            row.className = `item-row ${isSelected ? 'selected-item' : ''}`;
+                            row.dataset.index = realIndex;
+                            row.dataset.id = item.id;
+
+                            if (isSelectMode) {
+                                row.onclick = () => toggleItemSelection(item.id);
+                                row.ontouchstart = (e) => startDragSelection(e, item.id);
+                                row.onmousedown = (e) => startDragSelection(e, item.id);
+                            } else {
+                                row.addEventListener('mousedown', (e) => initItemDrag(e, realIndex));
+                                row.addEventListener('touchstart', (e) => initItemDrag(e, realIndex), { passive: false });
+                            }
+
+                            row.innerHTML = `
+                                ${circleMarker}
+                                <div class="item-name ${isCompleted ? 'completed' : ''}" ${!isSelectMode ? `onclick="event.stopPropagation(); openEditModal('${item.id}', false)"` : ''}>${escapeHtml(item.name)}${qtyHtml}</div>
+                                ${!isSelectMode ? `<button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('${item.id}')" title="Delete item">&times;</button>` : ''}
+                            `;
+                            container.appendChild(row);
+                        });
                     }
-
-                    row.innerHTML = `
-                        ${circleMarker}
-                        <div class="item-name ${isCompleted ? 'completed' : ''}" ${!isSelectMode ? `onclick="event.stopPropagation(); openEditModal('${item.id}', false)"` : ''}>${escapeHtml(item.name)}${qtyHtml}</div>
-                        ${!isSelectMode ? `<button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('${item.id}')" title="Delete item">&times;</button>` : ''}
-                    `;
-                    container.appendChild(row);
                 });
             }
 
@@ -1546,7 +1128,6 @@
             }
         }
 
-        /* --- Drag Selection Engine in Select Mode --- */
         function startDragSelection(e, initialId) {
             if (!isSelectMode) return;
             isDragSelecting = true;
@@ -1585,7 +1166,6 @@
             window.addEventListener('touchend', endDragSelection);
         }
 
-        /* --- 2-Second Debounced Completion Handling --- */
         function toggleItem(id) {
             const item = currentItems.find(i => i.id === id);
             if (!item) return;
@@ -1596,7 +1176,6 @@
                 renderList();
                 scheduleSync(`Toggle ${item.name}`);
 
-                // 2-second debounced timer: resets each tick so all ticked items stay together until 2s after the LAST tick
                 if (batchMoveTimer) clearTimeout(batchMoveTimer);
                 batchMoveTimer = setTimeout(() => {
                     pendingMoveIds.clear();
@@ -1611,7 +1190,6 @@
             }
         }
 
-        /* --- 60fps Lift & Drag Handlers with Moving Gap --- */
         function initItemDrag(e, index) {
             if (e.target.closest('.radio-circle') || e.target.closest('.delete-btn') || e.target.closest('.qty-badge')) {
                 return;
@@ -1794,7 +1372,7 @@
             select.value = newVal;
         }
 
-        function saveEditedItem() {
+        async function saveEditedItem() {
             if (!editingItemId) return;
             const item = currentItems.find(i => i.id === editingItemId);
             if (!item) return;
@@ -1805,6 +1383,7 @@
             if (newName) {
                 item.name = newName;
                 item.quantity = newQty;
+                item.section = await categorizeItemName(newName);
                 renderList();
                 scheduleSync(`Edit ${item.name}`);
             }
@@ -1820,12 +1399,14 @@
             if (!parsed.name) return;
 
             const finalQty = (explicitQty !== null && !isNaN(explicitQty)) ? explicitQty : parsed.quantity;
+            const assignedSection = await categorizeItemName(parsed.name);
 
             const newItem = {
                 id: 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
                 name: parsed.name,
                 quantity: finalQty,
-                completed: false
+                completed: false,
+                section: assignedSection
             };
             currentItems.push(newItem);
             renderList();
@@ -1836,12 +1417,7 @@
             const item = currentItems.find(i => i.id === id);
             if (!item) return;
 
-            if (pendingTimeouts[id]) {
-                clearTimeout(pendingTimeouts[id]);
-                delete pendingTimeouts[id];
-            }
             pendingMoveIds.delete(id);
-
             currentItems = currentItems.filter(i => i.id !== id);
             renderList();
             scheduleSync(`Remove ${item.name}`);
