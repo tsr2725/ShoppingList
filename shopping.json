@@ -1,5 +1,12 @@
 [
   {
+    "id": "id-1794437671225-f55j0",
+    "name": "Cake",
+    "quantity": 1,
+    "completed": false,
+    "section": "Others"
+  },
+  {
     "id": "id-1794437651610-fthq4",
     "name": "Bread",
     "quantity": 1,
@@ -12,13 +19,6 @@
     "quantity": 1,
     "completed": false,
     "section": "Dairy, Eggs and Cheese"
-  },
-  {
-    "id": "id-1794437671225-f55j0",
-    "name": "Cake",
-    "quantity": 1,
-    "completed": false,
-    "section": "Others"
   },
   {
     "id": "id-1794437677795-fuswu",
