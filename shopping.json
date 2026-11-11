@@ -6,15 +6,15 @@
     "completed": false
   },
   {
-    "id": "id-1794349883964-hn4uo",
-    "name": "Milk",
-    "quantity": 18,
-    "completed": false
-  },
-  {
     "id": "id-1794363534573-5mu6c",
     "name": "Test2",
     "quantity": 1,
+    "completed": false
+  },
+  {
+    "id": "id-1794349883964-hn4uo",
+    "name": "Milk",
+    "quantity": 18,
     "completed": false
   },
   {
