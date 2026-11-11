@@ -27,13 +27,13 @@
     "id": "id-1794364858032-uosu3",
     "name": "Test2",
     "quantity": 1,
-    "completed": false
+    "completed": true
   },
   {
     "id": "id-1794364816824-ma18v",
     "name": "Test2",
     "quantity": 1,
-    "completed": false
+    "completed": true
   },
   {
     "id": "id-1794383699238-zlik2",
