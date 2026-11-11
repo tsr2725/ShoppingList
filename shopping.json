@@ -6,6 +6,12 @@
     "completed": true
   },
   {
+    "id": "id-1794364858032-uosu3",
+    "name": "Test2",
+    "quantity": 1,
+    "completed": false
+  },
+  {
     "id": "id-1794350053380-om7dz",
     "name": "Pencil",
     "quantity": 6,
@@ -20,12 +26,6 @@
   {
     "id": "id-1794350235781-2gpat",
     "name": "Butter spread normal",
-    "quantity": 1,
-    "completed": false
-  },
-  {
-    "id": "id-1794364858032-uosu3",
-    "name": "Test2",
     "quantity": 1,
     "completed": false
   },
