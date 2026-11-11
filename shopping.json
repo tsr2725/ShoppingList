@@ -1,17 +1,17 @@
 [
   {
-    "id": "id-1794437671225-f55j0",
-    "name": "Cake",
-    "quantity": 1,
-    "completed": false,
-    "section": "Others"
-  },
-  {
     "id": "id-1794437651610-fthq4",
     "name": "Bread",
     "quantity": 1,
     "completed": false,
     "section": "Bakery"
+  },
+  {
+    "id": "id-1794437671225-f55j0",
+    "name": "Cake",
+    "quantity": 1,
+    "completed": false,
+    "section": "Others"
   },
   {
     "id": "id-1794437664168-7vzej",
