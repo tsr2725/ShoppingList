@@ -255,12 +255,16 @@
             font-weight: 400;
             color: var(--text-color);
             flex-grow: 1;
-            transition: color 0.2s;
+            transition: opacity 0.15s ease;
             word-break: break-word;
-            cursor: default;
+            cursor: pointer;
             display: flex;
             align-items: center;
             flex-wrap: wrap;
+        }
+
+        .item-name:hover {
+            opacity: 0.8;
         }
 
         .item-name.completed {
@@ -280,6 +284,7 @@
             margin-left: 8px;
             letter-spacing: -0.2px;
             white-space: nowrap;
+            cursor: pointer;
         }
 
         .item-name.completed .qty-badge {
@@ -566,7 +571,6 @@
         let lastLocalActionTime = 0;
         let editingItemId = null;
 
-        // Pending move set and timeouts for stay-in-place animation
         const pendingMoveIds = new Set();
         const pendingTimeouts = {};
 
@@ -862,7 +866,7 @@
                 activeItems.forEach((item) => {
                     const realIndex = currentItems.findIndex(i => i.id === item.id);
                     const qtyVal = item.quantity || 1;
-                    const qtyHtml = `<span class="qty-badge">x${qtyVal}</span>`;
+                    const qtyHtml = `<span class="qty-badge" onclick="event.stopPropagation(); openEditModal('${item.id}', true)">x${qtyVal}</span>`;
                     const isCompleted = item.completed;
                     
                     const row = document.createElement('div');
@@ -882,7 +886,7 @@
                              ontouchmove="handleTouchMove(event)" 
                              ontouchend="handleTouchEnd(event)">⋮⋮</div>
                         <div class="radio-circle ${isCompleted ? 'checked' : ''}" onclick="toggleItem('${item.id}')"></div>
-                        <div class="item-name ${isCompleted ? 'completed' : ''}">${escapeHtml(item.name)}${qtyHtml}</div>
+                        <div class="item-name ${isCompleted ? 'completed' : ''}" onclick="openEditModal('${item.id}', false)">${escapeHtml(item.name)}${qtyHtml}</div>
                         <button class="action-btn" onclick="openEditModal('${item.id}')" title="Edit item">✎</button>
                         <button class="action-btn delete-btn" onclick="deleteSingleItem('${item.id}')" title="Delete item">&times;</button>
                     `;
@@ -904,7 +908,7 @@
                     completedItems.forEach((item) => {
                         const realIndex = currentItems.findIndex(i => i.id === item.id);
                         const qtyVal = item.quantity || 1;
-                        const qtyHtml = `<span class="qty-badge">x${qtyVal}</span>`;
+                        const qtyHtml = `<span class="qty-badge" onclick="event.stopPropagation(); openEditModal('${item.id}', true)">x${qtyVal}</span>`;
                         
                         const row = document.createElement('div');
                         row.className = 'item-row';
@@ -923,7 +927,7 @@
                                  ontouchmove="handleTouchMove(event)" 
                                  ontouchend="handleTouchEnd(event)">⋮⋮</div>
                             <div class="radio-circle checked" onclick="toggleItem('${item.id}')"></div>
-                            <div class="item-name completed">${escapeHtml(item.name)}${qtyHtml}</div>
+                            <div class="item-name completed" onclick="openEditModal('${item.id}', false)">${escapeHtml(item.name)}${qtyHtml}</div>
                             <button class="action-btn" onclick="openEditModal('${item.id}')" title="Edit item">✎</button>
                             <button class="action-btn delete-btn" onclick="deleteSingleItem('${item.id}')" title="Delete item">&times;</button>
                         `;
@@ -1011,7 +1015,7 @@
             touchRowElement = null;
         }
 
-        function openEditModal(id) {
+        function openEditModal(id, focusQty = false) {
             const item = currentItems.find(i => i.id === id);
             if (!item) return;
 
@@ -1019,6 +1023,14 @@
             document.getElementById('editItemName').value = item.name;
             document.getElementById('editItemQty').value = item.quantity || 1;
             document.getElementById('editModal').style.display = 'flex';
+
+            setTimeout(() => {
+                if (focusQty) {
+                    document.getElementById('editItemQty').focus();
+                } else {
+                    document.getElementById('editItemName').focus();
+                }
+            }, 100);
         }
 
         function closeEditModal() {
@@ -1074,7 +1086,6 @@
             if (!item) return;
 
             if (!item.completed) {
-                // Checking off item: active -> completed
                 item.completed = true;
                 pendingMoveIds.add(id);
                 renderList();
@@ -1082,14 +1093,12 @@
 
                 if (pendingTimeouts[id]) clearTimeout(pendingTimeouts[id]);
 
-                // Stay in place for 1 second before moving to completed section
                 pendingTimeouts[id] = setTimeout(() => {
                     pendingMoveIds.delete(id);
                     delete pendingTimeouts[id];
                     renderList();
                 }, 1000);
             } else {
-                // Unchecking item: completed -> active immediately
                 if (pendingTimeouts[id]) {
                     clearTimeout(pendingTimeouts[id]);
                     delete pendingTimeouts[id];
