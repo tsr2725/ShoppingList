@@ -12,15 +12,15 @@
     "completed": true
   },
   {
-    "id": "id-1794349883964-hn4uo",
-    "name": "Milk",
-    "quantity": 18,
-    "completed": false
-  },
-  {
     "id": "id-1794350053380-om7dz",
     "name": "Pencil",
     "quantity": 6,
+    "completed": false
+  },
+  {
+    "id": "id-1794349883964-hn4uo",
+    "name": "Milk",
+    "quantity": 18,
     "completed": false
   }
 ]
