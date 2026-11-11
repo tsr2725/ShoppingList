@@ -5,5 +5,12 @@
     "quantity": 1,
     "completed": false,
     "section": "Bakery"
+  },
+  {
+    "id": "id-1794437664168-7vzej",
+    "name": "Milk",
+    "quantity": 1,
+    "completed": false,
+    "section": "Dairy, Eggs and Cheese"
   }
 ]
