@@ -3,66 +3,84 @@
     "id": "id-1794383712006-cgqxh",
     "name": "Butter block",
     "quantity": 1,
-    "completed": false
+    "completed": false,
+    "section": "Others"
   },
   {
     "id": "id-1794350235781-2gpat",
     "name": "Butter spread normal",
     "quantity": 1,
-    "completed": false
+    "completed": false,
+    "section": "Others"
   },
   {
     "id": "id-1794349883964-hn4uo",
     "name": "Milk",
     "quantity": 6,
-    "completed": true
+    "completed": true,
+    "section": "Others"
   },
   {
     "id": "id-1794383680945-8wx9j",
     "name": "Test2",
     "quantity": 1,
-    "completed": true
+    "completed": true,
+    "section": "Others"
   },
   {
     "id": "id-1794350053380-om7dz",
     "name": "Pencil",
     "quantity": 6,
-    "completed": true
+    "completed": true,
+    "section": "Others"
   },
   {
     "id": "id-1794364858032-uosu3",
     "name": "Test2",
     "quantity": 1,
-    "completed": true
+    "completed": true,
+    "section": "Others"
   },
   {
     "id": "id-1794364816824-ma18v",
     "name": "Test2",
     "quantity": 1,
-    "completed": true
+    "completed": true,
+    "section": "Others"
   },
   {
     "id": "id-1794383699238-zlik2",
     "name": "Butter spread low",
     "quantity": 1,
-    "completed": true
+    "completed": true,
+    "section": "Others"
   },
   {
     "id": "id-1794390580306-vyd7o",
     "name": "Test 1",
     "quantity": 1,
-    "completed": false
+    "completed": false,
+    "section": "Others"
   },
   {
     "id": "id-1794390618985-qlx97",
     "name": "Test 3",
     "quantity": 4,
-    "completed": false
+    "completed": false,
+    "section": "Others"
   },
   {
     "id": "id-1794425644393-8dgql",
     "name": "Test2",
     "quantity": 1,
-    "completed": false
+    "completed": false,
+    "section": "Others"
+  },
+  {
+    "id": "id-1794437651610-fthq4",
+    "name": "Bread",
+    "quantity": 1,
+    "completed": false,
+    "section": "Bakery"
   }
 ]
