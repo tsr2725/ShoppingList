@@ -86,6 +86,7 @@
             --secondary-btn-bg: #e5e5ea;
             --secondary-btn-text: #1c1c1e;
             --delete-hover: #ff3b30;
+            --drag-card-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -104,6 +105,7 @@
                 --input-border: #3a3a3c;
                 --secondary-btn-bg: #2c2c2e;
                 --secondary-btn-text: #f2f2f7;
+                --drag-card-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
             }
         }
 
@@ -179,6 +181,7 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
             padding: 8px 22px;
             margin-bottom: 20px;
+            position: relative;
         }
 
         .item-row {
@@ -187,36 +190,36 @@
             padding: 16px 0;
             border-bottom: 1px solid var(--item-border);
             user-select: none;
-            transition: transform 0.15s ease, opacity 0.2s ease;
+            touch-action: pan-y;
+            background: var(--card-bg);
+            transition: transform 0.18s cubic-bezier(0.2, 0, 0, 1), opacity 0.2s ease;
+            position: relative;
         }
 
         .item-row:last-child {
             border-bottom: none;
         }
 
-        .item-row.dragging {
-            opacity: 0.4;
+        /* Apple Reminders Floating Lifted Drag Style */
+        .item-row.is-dragging {
+            position: fixed;
+            z-index: 1000;
+            pointer-events: none;
+            box-shadow: var(--drag-card-shadow);
+            border-radius: 12px;
+            padding: 14px 18px;
             background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            transform: scale(1.02);
+            width: calc(100% - 40px);
+            max-width: 520px;
+            box-sizing: border-box;
         }
 
-        .item-row.drag-over {
-            border-top: 2px solid var(--accent-color);
-        }
-
-        .drag-handle {
-            color: var(--circle-border);
-            font-size: 18px;
-            cursor: grab;
-            padding: 0 12px 0 0;
-            user-select: none;
-            touch-action: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .drag-handle:active {
-            cursor: grabbing;
+        .item-row.drag-placeholder {
+            opacity: 0.15;
+            background: transparent;
+            border-style: dashed;
         }
 
         .radio-circle {
@@ -255,16 +258,13 @@
             font-weight: 400;
             color: var(--text-color);
             flex-grow: 1;
-            transition: opacity 0.15s ease;
             word-break: break-word;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
+            padding-right: 8px;
         }
 
         .item-name:hover {
-            opacity: 0.8;
+            opacity: 0.85;
         }
 
         .item-name.completed {
@@ -272,16 +272,17 @@
             color: var(--text-muted);
         }
 
+        /* Fixed inline badge positioning */
         .qty-badge {
-            display: inline-flex;
-            align-items: center;
+            display: inline-block;
+            vertical-align: middle;
             font-size: 13px;
             font-weight: 600;
             color: var(--accent-color);
             background-color: var(--badge-bg);
             padding: 2px 8px;
             border-radius: 10px;
-            margin-left: 8px;
+            margin-left: 6px;
             letter-spacing: -0.2px;
             white-space: nowrap;
             cursor: pointer;
@@ -297,16 +298,13 @@
             background: none;
             border: none;
             color: var(--circle-border);
-            font-size: 18px;
+            font-size: 20px;
             cursor: pointer;
             padding: 4px 6px;
             margin-left: 4px;
             border-radius: 4px;
             transition: color 0.2s ease;
-        }
-
-        .action-btn:hover {
-            color: var(--accent-color);
+            flex-shrink: 0;
         }
 
         .action-btn.delete-btn:hover {
@@ -574,9 +572,12 @@
         const pendingMoveIds = new Set();
         const pendingTimeouts = {};
 
-        let dragSrcIndex = null;
-        let touchActiveIndex = null;
-        let touchRowElement = null;
+        // Apple Reminders Drag-and-Drop state
+        let activeDragIndex = null;
+        let dragGhostEl = null;
+        let dragStartY = 0;
+        let currentTargetIndex = null;
+        let dragHoldTimer = null;
 
         function formatItemName(str) {
             if (!str) return "";
@@ -674,7 +675,7 @@
         });
 
         async function pollGitHub() {
-            if (isSyncing || syncPending || (Date.now() - lastLocalActionTime < 1000) || pendingMoveIds.size > 0) return;
+            if (isSyncing || syncPending || (Date.now() - lastLocalActionTime < 1000) || pendingMoveIds.size > 0 || activeDragIndex !== null) return;
 
             try {
                 const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
@@ -871,24 +872,15 @@
                     
                     const row = document.createElement('div');
                     row.className = 'item-row';
-                    row.draggable = true;
                     row.dataset.index = realIndex;
-                    
-                    row.ondragstart = (e) => handleDragStart(e, realIndex);
-                    row.ondragover = (e) => handleDragOver(e, realIndex);
-                    row.ondragleave = (e) => handleDragLeave(e);
-                    row.ondrop = (e) => handleDrop(e, realIndex);
-                    row.ondragend = (e) => handleDragEnd(e);
+
+                    row.addEventListener('mousedown', (e) => initItemDrag(e, realIndex));
+                    row.addEventListener('touchstart', (e) => initItemDrag(e, realIndex), { passive: false });
 
                     row.innerHTML = `
-                        <div class="drag-handle" 
-                             ontouchstart="handleTouchStart(event, ${realIndex})" 
-                             ontouchmove="handleTouchMove(event)" 
-                             ontouchend="handleTouchEnd(event)">⋮⋮</div>
-                        <div class="radio-circle ${isCompleted ? 'checked' : ''}" onclick="toggleItem('${item.id}')"></div>
-                        <div class="item-name ${isCompleted ? 'completed' : ''}" onclick="openEditModal('${item.id}', false)">${escapeHtml(item.name)}${qtyHtml}</div>
-                        <button class="action-btn" onclick="openEditModal('${item.id}')" title="Edit item">✎</button>
-                        <button class="action-btn delete-btn" onclick="deleteSingleItem('${item.id}')" title="Delete item">&times;</button>
+                        <div class="radio-circle ${isCompleted ? 'checked' : ''}" onclick="event.stopPropagation(); toggleItem('${item.id}')"></div>
+                        <div class="item-name ${isCompleted ? 'completed' : ''}" onclick="event.stopPropagation(); openEditModal('${item.id}', false)">${escapeHtml(item.name)}${qtyHtml}</div>
+                        <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('${item.id}')" title="Delete item">&times;</button>
                     `;
                     container.appendChild(row);
                 });
@@ -912,24 +904,15 @@
                         
                         const row = document.createElement('div');
                         row.className = 'item-row';
-                        row.draggable = true;
                         row.dataset.index = realIndex;
 
-                        row.ondragstart = (e) => handleDragStart(e, realIndex);
-                        row.ondragover = (e) => handleDragOver(e, realIndex);
-                        row.ondragleave = (e) => handleDragLeave(e);
-                        row.ondrop = (e) => handleDrop(e, realIndex);
-                        row.ondragend = (e) => handleDragEnd(e);
+                        row.addEventListener('mousedown', (e) => initItemDrag(e, realIndex));
+                        row.addEventListener('touchstart', (e) => initItemDrag(e, realIndex), { passive: false });
 
                         row.innerHTML = `
-                            <div class="drag-handle" 
-                                 ontouchstart="handleTouchStart(event, ${realIndex})" 
-                                 ontouchmove="handleTouchMove(event)" 
-                                 ontouchend="handleTouchEnd(event)">⋮⋮</div>
-                            <div class="radio-circle checked" onclick="toggleItem('${item.id}')"></div>
-                            <div class="item-name completed" onclick="openEditModal('${item.id}', false)">${escapeHtml(item.name)}${qtyHtml}</div>
-                            <button class="action-btn" onclick="openEditModal('${item.id}')" title="Edit item">✎</button>
-                            <button class="action-btn delete-btn" onclick="deleteSingleItem('${item.id}')" title="Delete item">&times;</button>
+                            <div class="radio-circle checked" onclick="event.stopPropagation(); toggleItem('${item.id}')"></div>
+                            <div class="item-name completed" onclick="event.stopPropagation(); openEditModal('${item.id}', false)">${escapeHtml(item.name)}${qtyHtml}</div>
+                            <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('${item.id}')" title="Delete item">&times;</button>
                         `;
                         container.appendChild(row);
                     });
@@ -937,82 +920,122 @@
             }
         }
 
-        function handleDragStart(e, index) {
-            dragSrcIndex = index;
-            e.dataTransfer.setData('text/plain', index);
-            e.currentTarget.classList.add('dragging');
-        }
-
-        function handleDragOver(e, index) {
-            e.preventDefault();
-            const row = e.currentTarget;
-            row.classList.add('drag-over');
-        }
-
-        function handleDragLeave(e) {
-            e.currentTarget.classList.remove('drag-over');
-        }
-
-        function handleDrop(e, targetIndex) {
-            e.preventDefault();
-            e.currentTarget.classList.remove('drag-over');
-            if (dragSrcIndex === null || dragSrcIndex === targetIndex) return;
-
-            const movedItem = currentItems.splice(dragSrcIndex, 1)[0];
-            currentItems.splice(targetIndex, 0, movedItem);
-
-            renderList();
-            scheduleSync("Reordered shopping list");
-        }
-
-        function handleDragEnd(e) {
-            e.currentTarget.classList.remove('dragging');
-            document.querySelectorAll('.item-row').forEach(r => r.classList.remove('drag-over'));
-            dragSrcIndex = null;
-        }
-
-        function handleTouchStart(e, index) {
-            touchActiveIndex = index;
-            touchRowElement = e.currentTarget.closest('.item-row');
-            if (touchRowElement) touchRowElement.classList.add('dragging');
-        }
-
-        function handleTouchMove(e) {
-            if (touchActiveIndex === null) return;
-            e.preventDefault();
-            const touch = e.touches[0];
-            const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
-            if (!targetEl) return;
-            const targetRow = targetEl.closest('.item-row');
-            
-            document.querySelectorAll('.item-row').forEach(r => r.classList.remove('drag-over'));
-            if (targetRow && targetRow !== touchRowElement) {
-                targetRow.classList.add('drag-over');
+        /* --- Apple Reminders Lift & Shift Drag Handlers --- */
+        function initItemDrag(e, index) {
+            if (e.target.closest('.radio-circle') || e.target.closest('.delete-btn') || e.target.closest('.qty-badge')) {
+                return;
             }
+
+            const isTouch = e.type === 'touchstart';
+            const pageY = isTouch ? e.touches[0].pageY : e.pageY;
+            
+            dragHoldTimer = setTimeout(() => {
+                startLiftDrag(e, index, pageY);
+            }, isTouch ? 120 : 150);
+
+            const cancelHold = () => {
+                if (dragHoldTimer) clearTimeout(dragHoldTimer);
+                window.removeEventListener('mouseup', cancelHold);
+                window.removeEventListener('touchend', cancelHold);
+                window.removeEventListener('touchmove', cancelHold);
+            };
+
+            window.addEventListener('mouseup', cancelHold, { once: true });
+            window.addEventListener('touchend', cancelHold, { once: true });
+            window.addEventListener('touchmove', (evt) => {
+                const moveY = evt.touches[0].pageY;
+                if (Math.abs(moveY - pageY) > 8) cancelHold();
+            }, { passive: true });
         }
 
-        function handleTouchEnd(e) {
-            if (touchActiveIndex === null) return;
-            const touch = e.changedTouches[0];
-            const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+        function startLiftDrag(e, index, initialY) {
+            activeDragIndex = index;
+            currentTargetIndex = index;
             
-            if (touchRowElement) touchRowElement.classList.remove('dragging');
-            document.querySelectorAll('.item-row').forEach(r => r.classList.remove('drag-over'));
+            const rowElements = Array.from(document.querySelectorAll('.list-card .item-row'));
+            const sourceEl = rowElements.find(el => parseInt(el.dataset.index, 10) === index);
+            if (!sourceEl) return;
 
-            if (targetEl) {
-                const targetRow = targetEl.closest('.item-row');
-                if (targetRow && targetRow.dataset.index !== undefined) {
-                    const targetIndex = parseInt(targetRow.dataset.index, 10);
-                    if (targetIndex !== touchActiveIndex) {
-                        const movedItem = currentItems.splice(touchActiveIndex, 1)[0];
-                        currentItems.splice(targetIndex, 0, movedItem);
-                        renderList();
-                        scheduleSync("Reordered shopping list");
+            if (e.cancelable) e.preventDefault();
+
+            const rect = sourceEl.getBoundingClientRect();
+            dragStartY = initialY - (rect.top + window.scrollY);
+
+            // Create floating lifted card ghost element
+            dragGhostEl = sourceEl.cloneNode(true);
+            dragGhostEl.classList.add('is-dragging');
+            dragGhostEl.style.top = `${rect.top}px`;
+            dragGhostEl.style.left = `${rect.left}px`;
+            dragGhostEl.style.width = `${rect.width}px`;
+            document.body.appendChild(dragGhostEl);
+
+            sourceEl.classList.add('drag-placeholder');
+
+            const moveHandler = (moveEvt) => {
+                const isTouch = moveEvt.type === 'touchmove';
+                if (isTouch && moveEvt.cancelable) moveEvt.preventDefault();
+
+                const clientY = isTouch ? moveEvt.touches[0].clientY : moveEvt.clientY;
+                const pageY = isTouch ? moveEvt.touches[0].pageY : moveEvt.pageY;
+
+                dragGhostEl.style.top = `${pageY - dragStartY - window.scrollY}px`;
+
+                // Calculate which row position we are hovering over to shift list items
+                let hoveredIndex = index;
+                const allRows = Array.from(document.querySelectorAll('.list-card .item-row:not(.is-dragging)'));
+
+                for (let r of allRows) {
+                    const rRect = r.getBoundingClientRect();
+                    const midY = rRect.top + rRect.height / 2;
+                    if (clientY > rRect.top && clientY < rRect.bottom) {
+                        hoveredIndex = parseInt(r.dataset.index, 10);
+                        break;
                     }
                 }
-            }
-            touchActiveIndex = null;
-            touchRowElement = null;
+
+                if (hoveredIndex !== currentTargetIndex) {
+                    currentTargetIndex = hoveredIndex;
+                    allRows.forEach(row => {
+                        const rIdx = parseInt(row.dataset.index, 10);
+                        if (row === sourceEl) return;
+
+                        if (index < currentTargetIndex && rIdx > index && rIdx <= currentTargetIndex) {
+                            row.style.transform = `translateY(-${rect.height}px)`;
+                        } else if (index > currentTargetIndex && rIdx < index && rIdx >= currentTargetIndex) {
+                            row.style.transform = `translateY(${rect.height}px)`;
+                        } else {
+                            row.style.transform = '';
+                        }
+                    });
+                }
+            };
+
+            const dropHandler = () => {
+                window.removeEventListener('mousemove', moveHandler);
+                window.removeEventListener('touchmove', moveHandler);
+                window.removeEventListener('mouseup', dropHandler);
+                window.removeEventListener('touchend', dropHandler);
+
+                if (dragGhostEl) {
+                    dragGhostEl.remove();
+                    dragGhostEl = null;
+                }
+
+                if (activeDragIndex !== null && currentTargetIndex !== null && activeDragIndex !== currentTargetIndex) {
+                    const movedItem = currentItems.splice(activeDragIndex, 1)[0];
+                    currentItems.splice(currentTargetIndex, 0, movedItem);
+                    scheduleSync("Reordered shopping list");
+                }
+
+                activeDragIndex = null;
+                currentTargetIndex = null;
+                renderList();
+            };
+
+            window.addEventListener('mousemove', moveHandler);
+            window.addEventListener('touchmove', moveHandler, { passive: false });
+            window.addEventListener('mouseup', dropHandler);
+            window.addEventListener('touchend', dropHandler);
         }
 
         function openEditModal(id, focusQty = false) {
