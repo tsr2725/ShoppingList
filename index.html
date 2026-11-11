@@ -87,6 +87,10 @@
             --secondary-btn-text: #1c1c1e;
             --delete-hover: #ff3b30;
             --drag-card-shadow: 0 14px 32px rgba(0, 0, 0, 0.14);
+            --menu-bg: rgba(255, 255, 255, 0.92);
+            --menu-border: rgba(0, 0, 0, 0.08);
+            --menu-shadow: 0 16px 38px rgba(0, 0, 0, 0.18);
+            --menu-hover: rgba(0, 0, 0, 0.04);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -106,6 +110,10 @@
                 --secondary-btn-bg: #2c2c2e;
                 --secondary-btn-text: #f2f2f7;
                 --drag-card-shadow: 0 14px 32px rgba(0, 0, 0, 0.55);
+                --menu-bg: rgba(30, 30, 32, 0.92);
+                --menu-border: rgba(255, 255, 255, 0.12);
+                --menu-shadow: 0 16px 38px rgba(0, 0, 0, 0.6);
+                --menu-hover: rgba(255, 255, 255, 0.06);
             }
         }
 
@@ -118,7 +126,7 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(32px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+            padding: max(16px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(32px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
             display: flex;
             flex-direction: column;
@@ -132,46 +140,184 @@
             max-width: 560px;
             padding-bottom: 80px;
             box-sizing: border-box;
+            position: relative;
         }
 
-        .header-row {
+        /* Apple Reminders Top Navigation Bar */
+        .nav-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            gap: 16px;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 200;
         }
 
-        h1 {
-            font-size: 32px;
-            font-weight: 700;
+        .icon-btn-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
             color: var(--accent-color);
-            margin: 0;
-            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: transform 0.15s ease, background-color 0.15s ease;
         }
 
-        .clear-btn {
+        .icon-btn-circle:active {
+            transform: scale(0.92);
+        }
+
+        .header-pill {
+            display: flex;
+            align-items: center;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 2px 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .header-pill-btn {
             background: none;
             border: none;
             color: var(--accent-color);
+            font-size: 16px;
+            padding: 6px 10px;
+            cursor: pointer;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-pill-divider {
+            width: 1px;
+            height: 16px;
+            background-color: var(--card-border);
+        }
+
+        .title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        h1 {
+            font-size: 34px;
+            font-weight: 800;
+            color: var(--accent-color);
+            margin: 0;
+            letter-spacing: -0.6px;
+        }
+
+        /* Apple Reminders Floating Popover Menu */
+        .popover-menu {
+            display: none;
+            position: absolute;
+            top: 48px;
+            right: 0;
+            width: 250px;
+            background: var(--menu-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--menu-border);
+            border-radius: 16px;
+            box-shadow: var(--menu-shadow);
+            padding: 6px 0;
+            z-index: 999;
+            animation: menuFadeIn 0.18s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        @keyframes menuFadeIn {
+            from { opacity: 0; transform: scale(0.92) translateY(-8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
             font-size: 15px;
+            font-weight: 500;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .menu-item:hover {
+            background: var(--menu-hover);
+        }
+
+        .menu-item-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-item-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+            color: var(--accent-color);
+        }
+
+        .menu-item-arrow {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .menu-item.danger {
+            color: var(--delete-hover);
+        }
+
+        .menu-item.danger .menu-item-icon {
+            color: var(--delete-hover);
+        }
+
+        .menu-divider {
+            height: 1px;
+            background-color: var(--card-border);
+            margin: 4px 0;
+        }
+
+        .submenu-panel {
+            display: none;
+            padding-left: 12px;
+            background: rgba(0, 0, 0, 0.02);
+            border-top: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        /* Selection Mode Bar */
+        .selection-bar {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 10px 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .selection-bar button {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            padding: 6px 10px;
-            white-space: nowrap;
-            flex-shrink: 0;
-            border-radius: 6px;
-            transition: background-color 0.2s ease, opacity 0.2s ease;
-        }
-
-        .clear-btn:hover:not(:disabled) {
-            background-color: rgba(191, 161, 95, 0.12);
-        }
-
-        .clear-btn:disabled {
-            color: var(--circle-border);
-            cursor: default;
-            opacity: 0.6;
+            padding: 4px 8px;
         }
 
         .list-card {
@@ -201,7 +347,6 @@
             border-bottom: none;
         }
 
-        /* Apple Reminders Floating Card Drag Style */
         .item-row.is-dragging {
             position: fixed;
             z-index: 1000;
@@ -477,7 +622,6 @@
             margin-top: 10px;
         }
 
-        /* Square Camera Viewport with Equal Border Margins */
         #reader { 
             width: 100%; 
             aspect-ratio: 1 / 1;
@@ -497,9 +641,104 @@
 <body>
 
     <div class="container">
-        <div class="header-row">
+        <!-- iOS Reminders Header Navigation -->
+        <div class="nav-header">
+            <button class="icon-btn-circle" onclick="window.history.back()" title="Back">‹</button>
+            <div class="header-pill">
+                <button class="header-pill-btn" onclick="togglePopoverMenu(event)">•••</button>
+            </div>
+
+            <!-- Apple Reminders Popover Menu -->
+            <div class="popover-menu" id="popoverMenu">
+                <div class="menu-item" onclick="toggleSelectMode()">
+                    <div class="menu-item-left">
+                        <span class="menu-item-icon">✓</span>
+                        <span>Select Items</span>
+                    </div>
+                </div>
+
+                <div class="menu-item" onclick="toggleSubmenu('sectionsSubmenu')">
+                    <div class="menu-item-left">
+                        <span class="menu-item-icon">☰</span>
+                        <span>Manage Sections</span>
+                    </div>
+                    <span class="menu-item-arrow" id="sectionsArrow">›</span>
+                </div>
+                <div class="submenu-panel" id="sectionsSubmenu">
+                    <div class="menu-item" onclick="alert('New Section feature coming in next step!')">
+                        <span style="padding-left: 24px;">New Section</span>
+                    </div>
+                    <div class="menu-item" onclick="alert('Edit Sections feature coming in next step!')">
+                        <span style="padding-left: 24px;">Edit Sections</span>
+                    </div>
+                </div>
+
+                <div class="menu-item" onclick="toggleSubmenu('sortSubmenu')">
+                    <div class="menu-item-left">
+                        <span class="menu-item-icon">⇅</span>
+                        <span>Sort By</span>
+                    </div>
+                    <span class="menu-item-arrow" id="sortArrow">›</span>
+                </div>
+                <div class="submenu-panel" id="sortSubmenu">
+                    <div class="menu-item" onclick="setSortMode('manual')">
+                        <span style="padding-left: 24px;" id="sortManualCheck">✓ Manual</span>
+                    </div>
+                    <div class="menu-item" onclick="setSortMode('title')">
+                        <span style="padding-left: 24px;" id="sortTitleCheck">Title</span>
+                    </div>
+                </div>
+
+                <div class="menu-item" onclick="toggleShowCompletedFromMenu()">
+                    <div class="menu-item-left">
+                        <span class="menu-item-icon">👁</span>
+                        <span id="showCompletedLabel">Hide Completed</span>
+                    </div>
+                </div>
+
+                <div class="menu-divider"></div>
+
+                <div class="menu-item" onclick="shareShoppingList()">
+                    <div class="menu-item-left">
+                        <span class="menu-item-icon">⎘</span>
+                        <span>Share List</span>
+                    </div>
+                </div>
+
+                <div class="menu-item" onclick="alert('List template saved!')">
+                    <div class="menu-item-left">
+                        <span class="menu-item-icon">⧉</span>
+                        <span>Save as Template</span>
+                    </div>
+                </div>
+
+                <div class="menu-item" onclick="window.print()">
+                    <div class="menu-item-left">
+                        <span class="menu-item-icon">⎙</span>
+                        <span>Print</span>
+                    </div>
+                </div>
+
+                <div class="menu-divider"></div>
+
+                <div class="menu-item danger" onclick="clearAllItems()">
+                    <div class="menu-item-left">
+                        <span class="menu-item-icon">🗑</span>
+                        <span>Delete List</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="title-row">
             <h1>Shopping</h1>
-            <button class="clear-btn" id="clearBtn" onclick="clearCompletedItems()" disabled>Clear Completed</button>
+        </div>
+
+        <!-- Selection Mode Action Bar -->
+        <div class="selection-bar" id="selectionBar">
+            <button onclick="completeAllItems()">Complete All</button>
+            <button onclick="uncompleteAllItems()">Uncomplete All</button>
+            <button onclick="toggleSelectMode()" style="color: var(--text-color);">Done</button>
         </div>
         
         <div class="list-card" id="listContainer">
@@ -582,7 +821,9 @@
         let html5QrCode = null;
         let currentItems = [];
         let currentSha = "";
-        let showCompleted = false;
+        let showCompleted = true;
+        let isSelectMode = false;
+        let currentSortMode = "manual";
 
         let syncTimer = null;
         let pollTimer = null;
@@ -592,10 +833,11 @@
         let lastLocalActionTime = 0;
         let editingItemId = null;
 
+        // 2-Second Debounced Completed Batch Move Logic
         const pendingMoveIds = new Set();
-        const pendingTimeouts = {};
+        let batchMoveTimer = null;
 
-        // 60fps Hardware-Accelerated Drag & Drop State
+        // 60fps Drag & Drop State
         let isDragging = false;
         let activeDragIndex = null;
         let currentTargetIndex = null;
@@ -666,6 +908,13 @@
             }
 
             startPolling();
+
+            document.addEventListener('click', (e) => {
+                const menu = document.getElementById('popoverMenu');
+                if (!e.target.closest('.header-pill') && !e.target.closest('#popoverMenu')) {
+                    menu.style.display = 'none';
+                }
+            });
         };
 
         function populateQtyDropdown() {
@@ -683,6 +932,82 @@
                 opt2.value = i;
                 opt2.textContent = `x${i}`;
                 addSelect.appendChild(opt2);
+            }
+        }
+
+        function togglePopoverMenu(e) {
+            e.stopPropagation();
+            const menu = document.getElementById('popoverMenu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleSubmenu(id) {
+            const el = document.getElementById(id);
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleSelectMode() {
+            isSelectMode = !isSelectMode;
+            document.getElementById('selectionBar').style.display = isSelectMode ? 'flex' : 'none';
+            document.getElementById('popoverMenu').style.display = 'none';
+            renderList();
+        }
+
+        function completeAllItems() {
+            currentItems.forEach(i => i.completed = true);
+            pendingMoveIds.clear();
+            renderList();
+            scheduleSync("Completed all items");
+        }
+
+        function uncompleteAllItems() {
+            currentItems.forEach(i => i.completed = false);
+            pendingMoveIds.clear();
+            renderList();
+            scheduleSync("Uncompleted all items");
+        }
+
+        function toggleShowCompletedFromMenu() {
+            showCompleted = !showCompleted;
+            document.getElementById('showCompletedLabel').innerText = showCompleted ? 'Hide Completed' : 'Show Completed';
+            document.getElementById('popoverMenu').style.display = 'none';
+            renderList();
+        }
+
+        function setSortMode(mode) {
+            currentSortMode = mode;
+            document.getElementById('sortManualCheck').innerText = mode === 'manual' ? '✓ Manual' : 'Manual';
+            document.getElementById('sortTitleCheck').innerText = mode === 'title' ? '✓ Title' : 'Title';
+            
+            if (mode === 'title') {
+                currentItems.sort((a, b) => a.name.localeCompare(b.name));
+                scheduleSync("Sorted list by title");
+            }
+            document.getElementById('popoverMenu').style.display = 'none';
+            renderList();
+        }
+
+        function shareShoppingList() {
+            document.getElementById('popoverMenu').style.display = 'none';
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Shopping List',
+                    text: 'Check out my shopping list!',
+                    url: window.location.href
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert("Shopping list URL copied to clipboard!");
+            }
+        }
+
+        function clearAllItems() {
+            document.getElementById('popoverMenu').style.display = 'none';
+            if (confirm("Are you sure you want to delete all items in this list?")) {
+                currentItems = [];
+                pendingMoveIds.clear();
+                renderList();
+                scheduleSync("Cleared list");
             }
         }
 
@@ -883,20 +1208,12 @@
             }
         }
 
-        function toggleShowCompleted() {
-            showCompleted = !showCompleted;
-            renderList();
-        }
-
         function renderList() {
             const container = document.getElementById('listContainer');
-            const clearBtn = document.getElementById('clearBtn');
             container.innerHTML = "";
 
             const activeItems = currentItems.filter(i => !i.completed || pendingMoveIds.has(i.id));
             const completedItems = currentItems.filter(i => i.completed && !pendingMoveIds.has(i.id));
-
-            clearBtn.disabled = currentItems.filter(i => i.completed).length === 0;
 
             if (currentItems.length === 0) {
                 container.innerHTML = '<div class="empty-state">Your shopping list is empty.</div>';
@@ -904,7 +1221,7 @@
             }
 
             if (activeItems.length === 0 && completedItems.length > 0 && !showCompleted) {
-                container.innerHTML = '<div class="empty-state">All items completed! Tap below to view.</div>';
+                container.innerHTML = '<div class="empty-state">All items completed! Tap menu to show.</div>';
             } else {
                 activeItems.forEach((item) => {
                     const realIndex = currentItems.findIndex(i => i.id === item.id);
@@ -931,7 +1248,7 @@
             if (completedItems.length > 0) {
                 const header = document.createElement('div');
                 header.className = 'completed-section-header';
-                header.onclick = toggleShowCompleted;
+                header.onclick = () => { showCompleted = !showCompleted; renderList(); };
                 header.innerHTML = `
                     <span>Completed (${completedItems.length})</span>
                     <span>${showCompleted ? '▲ Hide' : '▼ Show'}</span>
@@ -959,6 +1276,32 @@
                         container.appendChild(row);
                     });
                 }
+            }
+        }
+
+        /* --- 2-Second Debounced Completion Handling --- */
+        function toggleItem(id) {
+            const item = currentItems.find(i => i.id === id);
+            if (!item) return;
+
+            if (!item.completed) {
+                item.completed = true;
+                pendingMoveIds.add(id);
+                renderList();
+                scheduleSync(`Toggle ${item.name}`);
+
+                // Reset 2-second timer so all items stay in view together until 2 seconds after the LAST click
+                if (batchMoveTimer) clearTimeout(batchMoveTimer);
+                batchMoveTimer = setTimeout(() => {
+                    pendingMoveIds.clear();
+                    batchMoveTimer = null;
+                    renderList();
+                }, 2000);
+            } else {
+                pendingMoveIds.delete(id);
+                item.completed = false;
+                renderList();
+                scheduleSync(`Toggle ${item.name}`);
             }
         }
 
@@ -1003,7 +1346,6 @@
 
             if (e.cancelable) e.preventDefault();
 
-            // Cache bounding rects
             itemPositions = rowElements.map(el => {
                 const r = el.getBoundingClientRect();
                 return {
@@ -1020,7 +1362,6 @@
             if (!sourcePos) return;
             rowHeight = sourcePos.height;
 
-            // Spawn floating lifted card
             dragGhostEl = sourceEl.cloneNode(true);
             dragGhostEl.classList.add('is-dragging');
             dragGhostEl.style.top = `${sourcePos.top}px`;
@@ -1104,7 +1445,6 @@
                 currentTargetIndex = newTargetIndex;
                 itemPositions.forEach(p => {
                     if (p.index === activeDragIndex) {
-                        // Move empty placeholder gap smoothly to currentTargetIndex!
                         const offset = (currentTargetIndex - activeDragIndex) * rowHeight;
                         p.el.style.transform = `translate3d(0, ${offset}px, 0)`;
                     } else if (activeDragIndex < currentTargetIndex && p.index > activeDragIndex && p.index <= currentTargetIndex) {
@@ -1186,35 +1526,6 @@
             scheduleSync(`Add ${newItem.name} x${newItem.quantity}`);
         }
 
-        function toggleItem(id) {
-            const item = currentItems.find(i => i.id === id);
-            if (!item) return;
-
-            if (!item.completed) {
-                item.completed = true;
-                pendingMoveIds.add(id);
-                renderList();
-                scheduleSync(`Toggle ${item.name}`);
-
-                if (pendingTimeouts[id]) clearTimeout(pendingTimeouts[id]);
-
-                pendingTimeouts[id] = setTimeout(() => {
-                    pendingMoveIds.delete(id);
-                    delete pendingTimeouts[id];
-                    renderList();
-                }, 1000);
-            } else {
-                if (pendingTimeouts[id]) {
-                    clearTimeout(pendingTimeouts[id]);
-                    delete pendingTimeouts[id];
-                }
-                pendingMoveIds.delete(id);
-                item.completed = false;
-                renderList();
-                scheduleSync(`Toggle ${item.name}`);
-            }
-        }
-
         function deleteSingleItem(id) {
             const item = currentItems.find(i => i.id === id);
             if (!item) return;
@@ -1228,21 +1539,6 @@
             currentItems = currentItems.filter(i => i.id !== id);
             renderList();
             scheduleSync(`Remove ${item.name}`);
-        }
-
-        function clearCompletedItems() {
-            const completedCount = currentItems.filter(i => i.completed).length;
-            if (completedCount === 0) return;
-
-            currentItems = currentItems.filter(i => !i.completed);
-            pendingMoveIds.clear();
-            Object.keys(pendingTimeouts).forEach(k => {
-                clearTimeout(pendingTimeouts[k]);
-                delete pendingTimeouts[k];
-            });
-
-            renderList();
-            scheduleSync(`Clear ${completedCount} completed items`);
         }
 
         function openModal() {
