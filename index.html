@@ -86,7 +86,7 @@
             --secondary-btn-bg: #e5e5ea;
             --secondary-btn-text: #1c1c1e;
             --delete-hover: #ff3b30;
-            --drag-card-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+            --drag-card-shadow: 0 14px 32px rgba(0, 0, 0, 0.14);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -105,7 +105,7 @@
                 --input-border: #3a3a3c;
                 --secondary-btn-bg: #2c2c2e;
                 --secondary-btn-text: #f2f2f7;
-                --drag-card-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+                --drag-card-shadow: 0 14px 32px rgba(0, 0, 0, 0.55);
             }
         }
 
@@ -192,15 +192,16 @@
             user-select: none;
             touch-action: pan-y;
             background: var(--card-bg);
-            transition: transform 0.18s cubic-bezier(0.2, 0, 0, 1), opacity 0.2s ease;
+            transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), opacity 0.2s ease;
             position: relative;
+            will-change: transform;
         }
 
         .item-row:last-child {
             border-bottom: none;
         }
 
-        /* Apple Reminders Floating Lifted Drag Style */
+        /* Apple Reminders Floating Card Drag Style */
         .item-row.is-dragging {
             position: fixed;
             z-index: 1000;
@@ -210,10 +211,9 @@
             padding: 14px 18px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            transform: scale(1.02);
-            width: calc(100% - 40px);
-            max-width: 520px;
             box-sizing: border-box;
+            will-change: transform;
+            transition: none !important;
         }
 
         .item-row.drag-placeholder {
@@ -272,7 +272,6 @@
             color: var(--text-muted);
         }
 
-        /* Fixed inline badge positioning */
         .qty-badge {
             display: inline-block;
             vertical-align: middle;
@@ -405,7 +404,7 @@
         }
 
         .qty-picker-container {
-            margin: 14px 0 18px 0;
+            margin: 12px 0 18px 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -505,7 +504,18 @@
             <h3>Add Product</h3>
             <div id="reader"></div>
             <p style="font-size: 14px; color: var(--text-muted); margin: 10px 0;">— OR ENTER MANUALLY —</p>
-            <input type="text" id="manualInput" class="modal-input" placeholder="Enter product name (e.g. Bread x2)" onkeydown="if(event.key==='Enter') submitManualItem()">
+            <input type="text" id="manualInput" class="modal-input" placeholder="Enter product name (e.g. Bread)" onkeydown="if(event.key==='Enter') submitManualItem()">
+            
+            <div class="qty-picker-container">
+                <label class="qty-label">Quantity</label>
+                <div class="qty-picker-controls">
+                    <button type="button" class="qty-btn" onclick="adjustAddQty(-1)">−</button>
+                    <select id="addModalQty" class="qty-select-wheel">
+                    </select>
+                    <button type="button" class="qty-btn" onclick="adjustAddQty(1)">+</button>
+                </div>
+            </div>
+
             <button class="modal-btn" onclick="submitManualItem()">Add Product</button>
             <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
         </div>
@@ -572,11 +582,16 @@
         const pendingMoveIds = new Set();
         const pendingTimeouts = {};
 
-        // Apple Reminders Drag-and-Drop state
+        // 60fps Hardware-Accelerated Drag & Drop State
+        let isDragging = false;
         let activeDragIndex = null;
-        let dragGhostEl = null;
-        let dragStartY = 0;
         let currentTargetIndex = null;
+        let dragGhostEl = null;
+        let startClientY = 0;
+        let currentClientY = 0;
+        let itemPositions = [];
+        let rafId = null;
+        let rowHeight = 0;
         let dragHoldTimer = null;
 
         function formatItemName(str) {
@@ -641,14 +656,28 @@
         };
 
         function populateQtyDropdown() {
-            const select = document.getElementById('editItemQty');
-            select.innerHTML = '';
+            const editSelect = document.getElementById('editItemQty');
+            const addSelect = document.getElementById('addModalQty');
+            editSelect.innerHTML = '';
+            addSelect.innerHTML = '';
             for (let i = 1; i <= 99; i++) {
-                const opt = document.createElement('option');
-                opt.value = i;
-                opt.textContent = `x${i}`;
-                select.appendChild(opt);
+                const opt1 = document.createElement('option');
+                opt1.value = i;
+                opt1.textContent = `x${i}`;
+                editSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = i;
+                opt2.textContent = `x${i}`;
+                addSelect.appendChild(opt2);
             }
+        }
+
+        function adjustAddQty(delta) {
+            const select = document.getElementById('addModalQty');
+            let current = parseInt(select.value, 10) || 1;
+            let newVal = Math.max(1, Math.min(99, current + delta));
+            select.value = newVal;
         }
 
         function startPolling() {
@@ -675,7 +704,7 @@
         });
 
         async function pollGitHub() {
-            if (isSyncing || syncPending || (Date.now() - lastLocalActionTime < 1000) || pendingMoveIds.size > 0 || activeDragIndex !== null) return;
+            if (isSyncing || syncPending || (Date.now() - lastLocalActionTime < 1000) || pendingMoveIds.size > 0 || isDragging) return;
 
             try {
                 const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
@@ -920,18 +949,18 @@
             }
         }
 
-        /* --- Apple Reminders Lift & Shift Drag Handlers --- */
+        /* --- 60fps Hardware-Accelerated Lift & Drag Handlers --- */
         function initItemDrag(e, index) {
             if (e.target.closest('.radio-circle') || e.target.closest('.delete-btn') || e.target.closest('.qty-badge')) {
                 return;
             }
 
             const isTouch = e.type === 'touchstart';
-            const pageY = isTouch ? e.touches[0].pageY : e.pageY;
-            
+            const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+
             dragHoldTimer = setTimeout(() => {
-                startLiftDrag(e, index, pageY);
-            }, isTouch ? 120 : 150);
+                startLiftDrag(e, index, clientY);
+            }, isTouch ? 100 : 120);
 
             const cancelHold = () => {
                 if (dragHoldTimer) clearTimeout(dragHoldTimer);
@@ -943,70 +972,61 @@
             window.addEventListener('mouseup', cancelHold, { once: true });
             window.addEventListener('touchend', cancelHold, { once: true });
             window.addEventListener('touchmove', (evt) => {
-                const moveY = evt.touches[0].pageY;
-                if (Math.abs(moveY - pageY) > 8) cancelHold();
+                const moveY = evt.touches[0].clientY;
+                if (Math.abs(moveY - clientY) > 8) cancelHold();
             }, { passive: true });
         }
 
-        function startLiftDrag(e, index, initialY) {
+        function startLiftDrag(e, index, initialClientY) {
+            isDragging = true;
             activeDragIndex = index;
             currentTargetIndex = index;
-            
-            const rowElements = Array.from(document.querySelectorAll('.list-card .item-row'));
+            startClientY = initialClientY;
+            currentClientY = initialClientY;
+
+            const rowElements = Array.from(document.querySelectorAll('#listContainer .item-row'));
             const sourceEl = rowElements.find(el => parseInt(el.dataset.index, 10) === index);
             if (!sourceEl) return;
 
             if (e.cancelable) e.preventDefault();
 
-            const rect = sourceEl.getBoundingClientRect();
-            dragStartY = initialY - (rect.top + window.scrollY);
+            // Cache bounding rects once to prevent layout thrashing
+            itemPositions = rowElements.map(el => {
+                const r = el.getBoundingClientRect();
+                return {
+                    index: parseInt(el.dataset.index, 10),
+                    el: el,
+                    top: r.top,
+                    bottom: r.bottom,
+                    height: r.height,
+                    midY: r.top + r.height / 2
+                };
+            });
 
-            // Create floating lifted card ghost element
+            const sourcePos = itemPositions.find(p => p.index === index);
+            if (!sourcePos) return;
+            rowHeight = sourcePos.height;
+
+            // Spawn floating lifted card
             dragGhostEl = sourceEl.cloneNode(true);
             dragGhostEl.classList.add('is-dragging');
-            dragGhostEl.style.top = `${rect.top}px`;
-            dragGhostEl.style.left = `${rect.left}px`;
-            dragGhostEl.style.width = `${rect.width}px`;
+            dragGhostEl.style.top = `${sourcePos.top}px`;
+            dragGhostEl.style.left = `${sourcePos.el.getBoundingClientRect().left}px`;
+            dragGhostEl.style.width = `${sourcePos.el.getBoundingClientRect().width}px`;
+            dragGhostEl.style.transform = `translate3d(0, 0, 0) scale(1.02)`;
             document.body.appendChild(dragGhostEl);
 
             sourceEl.classList.add('drag-placeholder');
 
             const moveHandler = (moveEvt) => {
+                if (!isDragging) return;
                 const isTouch = moveEvt.type === 'touchmove';
                 if (isTouch && moveEvt.cancelable) moveEvt.preventDefault();
 
-                const clientY = isTouch ? moveEvt.touches[0].clientY : moveEvt.clientY;
-                const pageY = isTouch ? moveEvt.touches[0].pageY : moveEvt.pageY;
+                currentClientY = isTouch ? moveEvt.touches[0].clientY : moveEvt.clientY;
 
-                dragGhostEl.style.top = `${pageY - dragStartY - window.scrollY}px`;
-
-                // Calculate which row position we are hovering over to shift list items
-                let hoveredIndex = index;
-                const allRows = Array.from(document.querySelectorAll('.list-card .item-row:not(.is-dragging)'));
-
-                for (let r of allRows) {
-                    const rRect = r.getBoundingClientRect();
-                    const midY = rRect.top + rRect.height / 2;
-                    if (clientY > rRect.top && clientY < rRect.bottom) {
-                        hoveredIndex = parseInt(r.dataset.index, 10);
-                        break;
-                    }
-                }
-
-                if (hoveredIndex !== currentTargetIndex) {
-                    currentTargetIndex = hoveredIndex;
-                    allRows.forEach(row => {
-                        const rIdx = parseInt(row.dataset.index, 10);
-                        if (row === sourceEl) return;
-
-                        if (index < currentTargetIndex && rIdx > index && rIdx <= currentTargetIndex) {
-                            row.style.transform = `translateY(-${rect.height}px)`;
-                        } else if (index > currentTargetIndex && rIdx < index && rIdx >= currentTargetIndex) {
-                            row.style.transform = `translateY(${rect.height}px)`;
-                        } else {
-                            row.style.transform = '';
-                        }
-                    });
+                if (!rafId) {
+                    rafId = requestAnimationFrame(updateDragFrame);
                 }
             };
 
@@ -1016,10 +1036,17 @@
                 window.removeEventListener('mouseup', dropHandler);
                 window.removeEventListener('touchend', dropHandler);
 
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+
                 if (dragGhostEl) {
                     dragGhostEl.remove();
                     dragGhostEl = null;
                 }
+
+                isDragging = false;
 
                 if (activeDragIndex !== null && currentTargetIndex !== null && activeDragIndex !== currentTargetIndex) {
                     const movedItem = currentItems.splice(activeDragIndex, 1)[0];
@@ -1029,6 +1056,7 @@
 
                 activeDragIndex = null;
                 currentTargetIndex = null;
+                itemPositions = [];
                 renderList();
             };
 
@@ -1036,6 +1064,44 @@
             window.addEventListener('touchmove', moveHandler, { passive: false });
             window.addEventListener('mouseup', dropHandler);
             window.addEventListener('touchend', dropHandler);
+        }
+
+        function updateDragFrame() {
+            rafId = null;
+            if (!isDragging || !dragGhostEl) return;
+
+            const dy = currentClientY - startClientY;
+            dragGhostEl.style.transform = `translate3d(0, ${dy}px, 0) scale(1.02)`;
+
+            // Compute hovered target position using cached layout metrics
+            let newTargetIndex = activeDragIndex;
+            for (let p of itemPositions) {
+                if (currentClientY > p.top && currentClientY < p.bottom) {
+                    newTargetIndex = p.index;
+                    break;
+                } else if (currentClientY <= itemPositions[0].top) {
+                    newTargetIndex = itemPositions[0].index;
+                    break;
+                } else if (currentClientY >= itemPositions[itemPositions.length - 1].bottom) {
+                    newTargetIndex = itemPositions[itemPositions.length - 1].index;
+                    break;
+                }
+            }
+
+            if (newTargetIndex !== currentTargetIndex) {
+                currentTargetIndex = newTargetIndex;
+                itemPositions.forEach(p => {
+                    if (p.index === activeDragIndex) return;
+
+                    if (activeDragIndex < currentTargetIndex && p.index > activeDragIndex && p.index <= currentTargetIndex) {
+                        p.el.style.transform = `translate3d(0, -${rowHeight}px, 0)`;
+                    } else if (activeDragIndex > currentTargetIndex && p.index < activeDragIndex && p.index >= currentTargetIndex) {
+                        p.el.style.transform = `translate3d(0, ${rowHeight}px, 0)`;
+                    } else {
+                        p.el.style.transform = `translate3d(0, 0, 0)`;
+                    }
+                });
+            }
         }
 
         function openEditModal(id, focusQty = false) {
@@ -1089,14 +1155,16 @@
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
-        async function addItem(rawName) {
+        async function addItem(rawName, explicitQty = null) {
             const parsed = parseItemInput(rawName);
             if (!parsed.name) return;
+
+            const finalQty = (explicitQty !== null && !isNaN(explicitQty)) ? explicitQty : parsed.quantity;
 
             const newItem = {
                 id: 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
                 name: parsed.name,
-                quantity: parsed.quantity,
+                quantity: finalQty,
                 completed: false
             };
             currentItems.push(newItem);
@@ -1166,6 +1234,7 @@
         function openModal() {
             document.getElementById('scanModal').style.display = 'flex';
             document.getElementById('manualInput').value = "";
+            document.getElementById('addModalQty').value = "1";
             
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start(
@@ -1198,10 +1267,11 @@
         }
 
         async function submitManualItem() {
-            const val = document.getElementById('manualInput').value;
-            if (val && val.trim()) {
+            const nameVal = document.getElementById('manualInput').value;
+            const qtyVal = parseInt(document.getElementById('addModalQty').value, 10) || 1;
+            if (nameVal && nameVal.trim()) {
                 closeModal();
-                await addItem(val);
+                await addItem(nameVal, qtyVal);
             }
         }
     </script>
