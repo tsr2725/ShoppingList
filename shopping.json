@@ -16,11 +16,5 @@
     "name": "Pencil",
     "quantity": 6,
     "completed": false
-  },
-  {
-    "id": "id-1794358499986-ych3g",
-    "name": "Toothpaste",
-    "quantity": 2,
-    "completed": false
   }
 ]
