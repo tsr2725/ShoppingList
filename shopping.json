@@ -19,5 +19,12 @@
     "quantity": 1,
     "completed": false,
     "section": "Others"
+  },
+  {
+    "id": "id-1794437677795-fuswu",
+    "name": "Ghee",
+    "quantity": 1,
+    "completed": false,
+    "section": "Dairy, Eggs and Cheese"
   }
 ]
