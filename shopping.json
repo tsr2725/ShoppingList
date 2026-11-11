@@ -15,48 +15,48 @@
     "id": "id-1794383680945-8wx9j",
     "name": "Test2",
     "quantity": 1,
-    "completed": true
+    "completed": false
   },
   {
     "id": "id-1794350053380-om7dz",
     "name": "Pencil",
     "quantity": 6,
-    "completed": true
+    "completed": false
   },
   {
     "id": "id-1794364858032-uosu3",
     "name": "Test2",
     "quantity": 1,
-    "completed": true
+    "completed": false
   },
   {
     "id": "id-1794364816824-ma18v",
     "name": "Test2",
     "quantity": 1,
-    "completed": true
+    "completed": false
   },
   {
     "id": "id-1794383699238-zlik2",
     "name": "Butter spread low",
     "quantity": 1,
-    "completed": true
+    "completed": false
   },
   {
     "id": "id-1794383706198-ie83w",
     "name": "Butter spread normal",
     "quantity": 3,
-    "completed": true
+    "completed": false
   },
   {
     "id": "id-1794363534573-5mu6c",
     "name": "Test2",
     "quantity": 1,
-    "completed": true
+    "completed": false
   },
   {
     "id": "id-1794383712006-cgqxh",
     "name": "Butter block",
     "quantity": 1,
-    "completed": true
+    "completed": false
   }
 ]
