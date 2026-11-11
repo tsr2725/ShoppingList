@@ -217,9 +217,8 @@
         }
 
         .item-row.drag-placeholder {
-            opacity: 0.15;
-            background: transparent;
-            border-style: dashed;
+            opacity: 0 !important;
+            pointer-events: none;
         }
 
         .radio-circle {
@@ -478,7 +477,21 @@
             margin-top: 10px;
         }
 
-        #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+        /* Square Camera Viewport with Equal Border Margins */
+        #reader { 
+            width: 100%; 
+            aspect-ratio: 1 / 1;
+            border-radius: 12px; 
+            overflow: hidden; 
+            margin-bottom: 12px;
+            background: #000000;
+        }
+
+        #reader video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
     </style>
 </head>
 <body>
@@ -949,7 +962,7 @@
             }
         }
 
-        /* --- 60fps Hardware-Accelerated Lift & Drag Handlers --- */
+        /* --- 60fps Lift & Drag Handlers with Moving Gap --- */
         function initItemDrag(e, index) {
             if (e.target.closest('.radio-circle') || e.target.closest('.delete-btn') || e.target.closest('.qty-badge')) {
                 return;
@@ -990,7 +1003,7 @@
 
             if (e.cancelable) e.preventDefault();
 
-            // Cache bounding rects once to prevent layout thrashing
+            // Cache bounding rects
             itemPositions = rowElements.map(el => {
                 const r = el.getBoundingClientRect();
                 return {
@@ -1073,7 +1086,6 @@
             const dy = currentClientY - startClientY;
             dragGhostEl.style.transform = `translate3d(0, ${dy}px, 0) scale(1.02)`;
 
-            // Compute hovered target position using cached layout metrics
             let newTargetIndex = activeDragIndex;
             for (let p of itemPositions) {
                 if (currentClientY > p.top && currentClientY < p.bottom) {
@@ -1091,9 +1103,11 @@
             if (newTargetIndex !== currentTargetIndex) {
                 currentTargetIndex = newTargetIndex;
                 itemPositions.forEach(p => {
-                    if (p.index === activeDragIndex) return;
-
-                    if (activeDragIndex < currentTargetIndex && p.index > activeDragIndex && p.index <= currentTargetIndex) {
+                    if (p.index === activeDragIndex) {
+                        // Move empty placeholder gap smoothly to currentTargetIndex!
+                        const offset = (currentTargetIndex - activeDragIndex) * rowHeight;
+                        p.el.style.transform = `translate3d(0, ${offset}px, 0)`;
+                    } else if (activeDragIndex < currentTargetIndex && p.index > activeDragIndex && p.index <= currentTargetIndex) {
                         p.el.style.transform = `translate3d(0, -${rowHeight}px, 0)`;
                     } else if (activeDragIndex > currentTargetIndex && p.index < activeDragIndex && p.index >= currentTargetIndex) {
                         p.el.style.transform = `translate3d(0, ${rowHeight}px, 0)`;
@@ -1239,7 +1253,14 @@
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start(
                 { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
+                { 
+                    fps: 10, 
+                    qrbox: (w, h) => {
+                        const minDim = Math.min(w, h);
+                        const size = Math.floor(minDim * 0.7);
+                        return { width: size, height: size };
+                    }
+                },
                 async (decodedText) => {
                     closeModal();
                     let text = decodedText;
