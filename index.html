@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Shopping List</title>
+    <title>Groceries</title>
 
     <!-- iOS & Android Web App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Shopping">
+    <meta name="apple-mobile-web-app-title" content="Groceries">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
@@ -91,6 +91,10 @@
             --menu-border: rgba(0, 0, 0, 0.08);
             --menu-shadow: 0 16px 38px rgba(0, 0, 0, 0.18);
             --menu-hover: rgba(0, 0, 0, 0.04);
+            --selected-row-bg: rgba(191, 161, 95, 0.12);
+            --bottom-bar-bg: rgba(250, 250, 250, 0.88);
+            --bottom-bar-border: rgba(0, 0, 0, 0.12);
+            --selection-blue: #007aff;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -114,6 +118,10 @@
                 --menu-border: rgba(255, 255, 255, 0.12);
                 --menu-shadow: 0 16px 38px rgba(0, 0, 0, 0.6);
                 --menu-hover: rgba(255, 255, 255, 0.06);
+                --selected-row-bg: rgba(255, 255, 255, 0.1);
+                --bottom-bar-bg: rgba(28, 28, 30, 0.88);
+                --bottom-bar-border: rgba(255, 255, 255, 0.15);
+                --selection-blue: #0a84ff;
             }
         }
 
@@ -126,8 +134,8 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: max(16px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(32px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            padding: max(12px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(32px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -138,40 +146,46 @@
         .container {
             width: 100%;
             max-width: 560px;
-            padding-bottom: 80px;
+            padding-bottom: 90px;
             box-sizing: border-box;
             position: relative;
         }
 
-        /* Apple Reminders Top Navigation Bar */
+        /* iOS Reminders Header Navigation */
         .nav-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             position: relative;
             z-index: 200;
         }
 
-        .icon-btn-circle {
-            width: 36px;
-            height: 36px;
+        .header-title-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-header-icon {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
+            background-color: var(--badge-bg);
             color: var(--accent-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
             font-size: 18px;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-            transition: transform 0.15s ease, background-color 0.15s ease;
+            flex-shrink: 0;
         }
 
-        .icon-btn-circle:active {
-            transform: scale(0.92);
+        h1 {
+            font-size: 34px;
+            font-weight: 800;
+            color: var(--accent-color);
+            margin: 0;
+            letter-spacing: -0.6px;
         }
 
         .header-pill {
@@ -197,32 +211,27 @@
             justify-content: center;
         }
 
-        .header-pill-divider {
-            width: 1px;
-            height: 16px;
-            background-color: var(--card-border);
-        }
-
-        .title-row {
-            display: flex;
-            justify-content: space-between;
+        .finish-select-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--selection-blue);
+            color: white;
+            border: none;
+            font-size: 16px;
+            font-weight: 700;
+            display: none;
             align-items: center;
-            margin-bottom: 18px;
-        }
-
-        h1 {
-            font-size: 34px;
-            font-weight: 800;
-            color: var(--accent-color);
-            margin: 0;
-            letter-spacing: -0.6px;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
         }
 
         /* Apple Reminders Floating Popover Menu */
         .popover-menu {
             display: none;
             position: absolute;
-            top: 48px;
+            top: 44px;
             right: 0;
             width: 250px;
             background: var(--menu-bg);
@@ -260,14 +269,14 @@
         .menu-item-left {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .menu-item-icon {
             font-size: 16px;
             width: 20px;
             text-align: center;
-            color: var(--accent-color);
+            color: var(--text-color);
         }
 
         .menu-item-arrow {
@@ -297,35 +306,13 @@
             border-bottom: 1px solid var(--card-border);
         }
 
-        /* Selection Mode Bar */
-        .selection-bar {
-            display: none;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 10px 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .selection-bar button {
-            background: none;
-            border: none;
-            color: var(--accent-color);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            padding: 4px 8px;
-        }
-
         .list-card {
             background: var(--card-bg);
             border-radius: 14px;
             border: 1px solid var(--card-border);
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
             padding: 8px 22px;
+            margin-top: 14px;
             margin-bottom: 20px;
             position: relative;
         }
@@ -338,13 +325,18 @@
             user-select: none;
             touch-action: pan-y;
             background: var(--card-bg);
-            transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), opacity 0.2s ease;
+            transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease, opacity 0.2s ease;
             position: relative;
             will-change: transform;
+            border-radius: 8px;
         }
 
         .item-row:last-child {
             border-bottom: none;
+        }
+
+        .item-row.selected-item {
+            background-color: var(--selected-row-bg) !important;
         }
 
         .item-row.is-dragging {
@@ -366,6 +358,7 @@
             pointer-events: none;
         }
 
+        /* Checkbox & Selection Circle Styling */
         .radio-circle {
             width: 22px;
             height: 22px;
@@ -387,6 +380,36 @@
         }
 
         .radio-circle.checked::after {
+            content: "";
+            width: 5px;
+            height: 9px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            margin-bottom: 2px;
+        }
+
+        /* Selection Mode Marker Circle (Solid Blue Checkmark or Empty Outline) */
+        .select-marker {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--circle-border);
+            background-color: transparent;
+            border-radius: 50%;
+            margin-right: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .select-marker.is-selected {
+            border-color: var(--selection-blue);
+            background-color: var(--selection-blue);
+        }
+
+        .select-marker.is-selected::after {
             content: "";
             width: 5px;
             height: 9px;
@@ -473,6 +496,72 @@
             color: var(--accent-color);
         }
 
+        /* Apple Reminders Translucent Bottom Action Bar */
+        .bottom-action-bar {
+            display: none;
+            position: fixed;
+            bottom: calc(20px + env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 460px;
+            height: 54px;
+            background: var(--bottom-bar-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--bottom-bar-border);
+            border-radius: 28px;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+            justify-content: space-around;
+            align-items: center;
+            z-index: 900;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+
+        .bottom-bar-btn {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            transition: opacity 0.2s ease, transform 0.15s ease;
+        }
+
+        .bottom-bar-btn:active {
+            transform: scale(0.9);
+        }
+
+        .bottom-bar-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Section Selection Popup Menu */
+        .section-picker-popover {
+            display: none;
+            position: fixed;
+            bottom: calc(84px + env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 60px);
+            max-width: 320px;
+            background: var(--menu-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--menu-border);
+            border-radius: 16px;
+            box-shadow: var(--menu-shadow);
+            padding: 8px 0;
+            z-index: 950;
+        }
+
         .status {
             text-align: center;
             margin-top: 14px;
@@ -505,7 +594,7 @@
             box-shadow: 0 4px 16px rgba(191, 161, 95, 0.4);
             cursor: pointer;
             border: none;
-            transition: transform 0.2s;
+            transition: transform 0.2s, opacity 0.2s;
             z-index: 99;
         }
 
@@ -641,12 +730,18 @@
 <body>
 
     <div class="container">
-        <!-- iOS Reminders Header Navigation -->
+        <!-- Header Navigation Bar -->
         <div class="nav-header">
-            <button class="icon-btn-circle" onclick="window.history.back()" title="Back">‹</button>
-            <div class="header-pill">
+            <div class="header-title-box">
+                <div class="app-header-icon">🛒</div>
+                <h1 id="mainTitle">Groceries</h1>
+            </div>
+
+            <div class="header-pill" id="headerPill">
                 <button class="header-pill-btn" onclick="togglePopoverMenu(event)">•••</button>
             </div>
+
+            <button class="finish-select-btn" id="finishSelectBtn" onclick="toggleSelectMode()">✓</button>
 
             <!-- Apple Reminders Popover Menu -->
             <div class="popover-menu" id="popoverMenu">
@@ -665,10 +760,10 @@
                     <span class="menu-item-arrow" id="sectionsArrow">›</span>
                 </div>
                 <div class="submenu-panel" id="sectionsSubmenu">
-                    <div class="menu-item" onclick="alert('New Section feature coming in next step!')">
+                    <div class="menu-item" onclick="alert('Section features ready for next step!')">
                         <span style="padding-left: 24px;">New Section</span>
                     </div>
-                    <div class="menu-item" onclick="alert('Edit Sections feature coming in next step!')">
+                    <div class="menu-item" onclick="alert('Section features ready for next step!')">
                         <span style="padding-left: 24px;">Edit Sections</span>
                     </div>
                 </div>
@@ -729,26 +824,54 @@
                 </div>
             </div>
         </div>
-
-        <div class="title-row">
-            <h1>Shopping</h1>
-        </div>
-
-        <!-- Selection Mode Action Bar -->
-        <div class="selection-bar" id="selectionBar">
-            <button onclick="completeAllItems()">Complete All</button>
-            <button onclick="uncompleteAllItems()">Uncomplete All</button>
-            <button onclick="toggleSelectMode()" style="color: var(--text-color);">Done</button>
-        </div>
         
         <div class="list-card" id="listContainer">
-            <div class="empty-state" id="loadingText">Loading shopping list...</div>
+            <div class="empty-state" id="loadingText">Loading groceries list...</div>
         </div>
         
         <div id="status" class="status"></div>
     </div>
 
-    <button class="fab" onclick="openModal()">+</button>
+    <!-- Apple Reminders Floating Bottom Action Bar for Selection Mode -->
+    <div class="bottom-action-bar" id="bottomActionBar">
+        <!-- 1. Complete Selected Button -->
+        <button class="bottom-bar-btn" id="btnCompleteSelected" onclick="completeSelectedItems()" title="Complete Selected">
+            <div class="radio-circle checked" style="margin-right: 0;"></div>
+        </button>
+
+        <!-- 2. Uncomplete Selected Button -->
+        <button class="bottom-bar-btn" id="btnUncompleteSelected" onclick="uncompleteSelectedItems()" title="Uncomplete Selected">
+            <div class="radio-circle" style="margin-right: 0;"></div>
+        </button>
+
+        <!-- 3. Move to Section Button -->
+        <button class="bottom-bar-btn" id="btnMoveSection" onclick="toggleSectionPickerPopover(event)" title="Move Section">
+            <span style="font-size: 22px;">☰</span>
+        </button>
+
+        <!-- 4. Delete Selected Button -->
+        <button class="bottom-bar-btn" id="btnDeleteSelected" onclick="deleteSelectedItems()" title="Delete Selected">
+            <span>🗑</span>
+        </button>
+
+        <!-- 5. Three-dot Menu -->
+        <button class="bottom-bar-btn" onclick="togglePopoverMenu(event)" title="More Options">
+            <span>•••</span>
+        </button>
+    </div>
+
+    <!-- Section Picker Popover Menu -->
+    <div class="section-picker-popover" id="sectionPickerPopover">
+        <div class="menu-item" onclick="moveSelectedToSection('Dairy, Eggs and Cheese')"><span>Dairy, Eggs and Cheese</span></div>
+        <div class="menu-item" onclick="moveSelectedToSection('Fruit and Veg')"><span>Fruit and Veg</span></div>
+        <div class="menu-item" onclick="moveSelectedToSection('Spices and Seasonings')"><span>Spices and Seasonings</span></div>
+        <div class="menu-item" onclick="moveSelectedToSection('Snacks and Lollies')"><span>Snacks and Lollies</span></div>
+        <div class="menu-item" onclick="moveSelectedToSection('Cleaning')"><span>Cleaning</span></div>
+        <div class="menu-divider"></div>
+        <div class="menu-item" onclick="moveSelectedToSection('New Section')"><span>New Section with Selection</span></div>
+    </div>
+
+    <button class="fab" id="fabBtn" onclick="openModal()">+</button>
 
     <!-- Add Product Modal -->
     <div class="modal" id="scanModal">
@@ -823,6 +946,7 @@
         let currentSha = "";
         let showCompleted = true;
         let isSelectMode = false;
+        let selectedItemIds = new Set();
         let currentSortMode = "manual";
 
         let syncTimer = null;
@@ -837,7 +961,7 @@
         const pendingMoveIds = new Set();
         let batchMoveTimer = null;
 
-        // 60fps Drag & Drop State
+        // 60fps Drag & Drop / Drag Selection State
         let isDragging = false;
         let activeDragIndex = null;
         let currentTargetIndex = null;
@@ -848,6 +972,7 @@
         let rafId = null;
         let rowHeight = 0;
         let dragHoldTimer = null;
+        let isDragSelecting = false;
 
         function formatItemName(str) {
             if (!str) return "";
@@ -911,8 +1036,12 @@
 
             document.addEventListener('click', (e) => {
                 const menu = document.getElementById('popoverMenu');
-                if (!e.target.closest('.header-pill') && !e.target.closest('#popoverMenu')) {
+                const secPopover = document.getElementById('sectionPickerPopover');
+                if (!e.target.closest('#headerPill') && !e.target.closest('#popoverMenu') && !e.target.closest('.bottom-bar-btn')) {
                     menu.style.display = 'none';
+                }
+                if (!e.target.closest('#btnMoveSection') && !e.target.closest('#sectionPickerPopover')) {
+                    secPopover.style.display = 'none';
                 }
             });
         };
@@ -946,25 +1075,132 @@
             el.style.display = el.style.display === 'block' ? 'none' : 'block';
         }
 
+        /* --- Apple Reminders Selection Mode --- */
         function toggleSelectMode() {
             isSelectMode = !isSelectMode;
-            document.getElementById('selectionBar').style.display = isSelectMode ? 'flex' : 'none';
+            selectedItemIds.clear();
             document.getElementById('popoverMenu').style.display = 'none';
+            document.getElementById('sectionPickerPopover').style.display = 'none';
+
+            const titleEl = document.getElementById('mainTitle');
+            const pillEl = document.getElementById('headerPill');
+            const finishBtn = document.getElementById('finishSelectBtn');
+            const bottomBar = document.getElementById('bottomActionBar');
+            const fab = document.getElementById('fabBtn');
+
+            if (isSelectMode) {
+                titleEl.innerText = "Select Reminders";
+                pillEl.style.display = 'none';
+                finishBtn.style.display = 'flex';
+                bottomBar.style.display = 'flex';
+                fab.style.opacity = '0';
+                fab.style.pointerEvents = 'none';
+            } else {
+                titleEl.innerText = "Groceries";
+                pillEl.style.display = 'flex';
+                finishBtn.style.display = 'none';
+                bottomBar.style.display = 'none';
+                fab.style.opacity = '1';
+                fab.style.pointerEvents = 'auto';
+            }
+
             renderList();
+            updateSelectionBarState();
         }
 
-        function completeAllItems() {
-            currentItems.forEach(i => i.completed = true);
-            pendingMoveIds.clear();
+        function toggleItemSelection(id) {
+            if (!isSelectMode) return;
+            if (selectedItemIds.has(id)) {
+                selectedItemIds.delete(id);
+            } else {
+                selectedItemIds.add(id);
+            }
+
+            const titleEl = document.getElementById('mainTitle');
+            if (selectedItemIds.size === 0) {
+                titleEl.innerText = "Select Reminders";
+            } else {
+                titleEl.innerText = `${selectedItemIds.size} Selected`;
+            }
+
             renderList();
-            scheduleSync("Completed all items");
+            updateSelectionBarState();
         }
 
-        function uncompleteAllItems() {
-            currentItems.forEach(i => i.completed = false);
+        function updateSelectionBarState() {
+            if (!isSelectMode) return;
+
+            const btnComplete = document.getElementById('btnCompleteSelected');
+            const btnUncomplete = document.getElementById('btnUncompleteSelected');
+            const btnMove = document.getElementById('btnMoveSection');
+            const btnDelete = document.getElementById('btnDeleteSelected');
+
+            const selectedList = currentItems.filter(i => selectedItemIds.has(i.id));
+
+            if (selectedList.length === 0) {
+                btnComplete.disabled = true;
+                btnUncomplete.disabled = true;
+                btnMove.disabled = true;
+                btnDelete.disabled = true;
+                return;
+            }
+
+            btnMove.disabled = false;
+            btnDelete.disabled = false;
+
+            const allCompleted = selectedList.every(i => i.completed);
+            const allUncompleted = selectedList.every(i => !i.completed);
+
+            btnComplete.disabled = allCompleted;
+            btnUncomplete.disabled = allUncompleted;
+        }
+
+        function completeSelectedItems() {
+            if (selectedItemIds.size === 0) return;
+            currentItems.forEach(i => {
+                if (selectedItemIds.has(i.id)) i.completed = true;
+            });
             pendingMoveIds.clear();
             renderList();
-            scheduleSync("Uncompleted all items");
+            updateSelectionBarState();
+            scheduleSync("Completed selected items");
+        }
+
+        function uncompleteSelectedItems() {
+            if (selectedItemIds.size === 0) return;
+            currentItems.forEach(i => {
+                if (selectedItemIds.has(i.id)) i.completed = false;
+            });
+            pendingMoveIds.clear();
+            renderList();
+            updateSelectionBarState();
+            scheduleSync("Uncompleted selected items");
+        }
+
+        function deleteSelectedItems() {
+            if (selectedItemIds.size === 0) return;
+            const count = selectedItemIds.size;
+            currentItems = currentItems.filter(i => !selectedItemIds.has(i.id));
+            selectedItemIds.clear();
+            
+            const titleEl = document.getElementById('mainTitle');
+            titleEl.innerText = "Select Reminders";
+
+            renderList();
+            updateSelectionBarState();
+            scheduleSync(`Deleted ${count} items`);
+        }
+
+        function toggleSectionPickerPopover(e) {
+            e.stopPropagation();
+            if (selectedItemIds.size === 0) return;
+            const popover = document.getElementById('sectionPickerPopover');
+            popover.style.display = popover.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function moveSelectedToSection(sectionName) {
+            document.getElementById('sectionPickerPopover').style.display = 'none';
+            alert(`Moved ${selectedItemIds.size} item(s) to section: ${sectionName}`);
         }
 
         function toggleShowCompletedFromMenu() {
@@ -991,13 +1227,13 @@
             document.getElementById('popoverMenu').style.display = 'none';
             if (navigator.share) {
                 navigator.share({
-                    title: 'Shopping List',
-                    text: 'Check out my shopping list!',
+                    title: 'Groceries List',
+                    text: 'Check out my groceries list!',
                     url: window.location.href
                 }).catch(() => {});
             } else {
                 navigator.clipboard.writeText(window.location.href);
-                alert("Shopping list URL copied to clipboard!");
+                alert("Groceries list URL copied to clipboard!");
             }
         }
 
@@ -1006,6 +1242,7 @@
             if (confirm("Are you sure you want to delete all items in this list?")) {
                 currentItems = [];
                 pendingMoveIds.clear();
+                selectedItemIds.clear();
                 renderList();
                 scheduleSync("Cleared list");
             }
@@ -1042,7 +1279,7 @@
         });
 
         async function pollGitHub() {
-            if (isSyncing || syncPending || (Date.now() - lastLocalActionTime < 1000) || pendingMoveIds.size > 0 || isDragging) return;
+            if (isSyncing || syncPending || (Date.now() - lastLocalActionTime < 1000) || pendingMoveIds.size > 0 || isDragging || isSelectMode) return;
 
             try {
                 const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
@@ -1216,7 +1453,7 @@
             const completedItems = currentItems.filter(i => i.completed && !pendingMoveIds.has(i.id));
 
             if (currentItems.length === 0) {
-                container.innerHTML = '<div class="empty-state">Your shopping list is empty.</div>';
+                container.innerHTML = '<div class="empty-state">Your groceries list is empty.</div>';
                 return;
             }
 
@@ -1226,20 +1463,35 @@
                 activeItems.forEach((item) => {
                     const realIndex = currentItems.findIndex(i => i.id === item.id);
                     const qtyVal = item.quantity || 1;
-                    const qtyHtml = `<span class="qty-badge" onclick="event.stopPropagation(); openEditModal('${item.id}', true)">x${qtyVal}</span>`;
                     const isCompleted = item.completed;
-                    
-                    const row = document.createElement('div');
-                    row.className = 'item-row';
-                    row.dataset.index = realIndex;
+                    const isSelected = selectedItemIds.has(item.id);
 
-                    row.addEventListener('mousedown', (e) => initItemDrag(e, realIndex));
-                    row.addEventListener('touchstart', (e) => initItemDrag(e, realIndex), { passive: false });
+                    const qtyHtml = isSelectMode 
+                        ? `<span class="qty-badge">x${qtyVal}</span>` 
+                        : `<span class="qty-badge" onclick="event.stopPropagation(); openEditModal('${item.id}', true)">x${qtyVal}</span>`;
+
+                    const circleMarker = isSelectMode
+                        ? `<div class="select-marker ${isSelected ? 'is-selected' : ''}"></div>`
+                        : `<div class="radio-circle ${isCompleted ? 'checked' : ''}" onclick="event.stopPropagation(); toggleItem('${item.id}')"></div>`;
+
+                    const row = document.createElement('div');
+                    row.className = `item-row ${isSelected ? 'selected-item' : ''}`;
+                    row.dataset.index = realIndex;
+                    row.dataset.id = item.id;
+
+                    if (isSelectMode) {
+                        row.onclick = () => toggleItemSelection(item.id);
+                        row.ontouchstart = (e) => startDragSelection(e, item.id);
+                        row.onmousedown = (e) => startDragSelection(e, item.id);
+                    } else {
+                        row.addEventListener('mousedown', (e) => initItemDrag(e, realIndex));
+                        row.addEventListener('touchstart', (e) => initItemDrag(e, realIndex), { passive: false });
+                    }
 
                     row.innerHTML = `
-                        <div class="radio-circle ${isCompleted ? 'checked' : ''}" onclick="event.stopPropagation(); toggleItem('${item.id}')"></div>
-                        <div class="item-name ${isCompleted ? 'completed' : ''}" onclick="event.stopPropagation(); openEditModal('${item.id}', false)">${escapeHtml(item.name)}${qtyHtml}</div>
-                        <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('${item.id}')" title="Delete item">&times;</button>
+                        ${circleMarker}
+                        <div class="item-name ${isCompleted ? 'completed' : ''}" ${!isSelectMode ? `onclick="event.stopPropagation(); openEditModal('${item.id}', false)"` : ''}>${escapeHtml(item.name)}${qtyHtml}</div>
+                        ${!isSelectMode ? `<button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('${item.id}')" title="Delete item">&times;</button>` : ''}
                     `;
                     container.appendChild(row);
                 });
@@ -1259,24 +1511,78 @@
                     completedItems.forEach((item) => {
                         const realIndex = currentItems.findIndex(i => i.id === item.id);
                         const qtyVal = item.quantity || 1;
-                        const qtyHtml = `<span class="qty-badge" onclick="event.stopPropagation(); openEditModal('${item.id}', true)">x${qtyVal}</span>`;
-                        
-                        const row = document.createElement('div');
-                        row.className = 'item-row';
-                        row.dataset.index = realIndex;
+                        const isSelected = selectedItemIds.has(item.id);
 
-                        row.addEventListener('mousedown', (e) => initItemDrag(e, realIndex));
-                        row.addEventListener('touchstart', (e) => initItemDrag(e, realIndex), { passive: false });
+                        const qtyHtml = isSelectMode 
+                            ? `<span class="qty-badge">x${qtyVal}</span>` 
+                            : `<span class="qty-badge" onclick="event.stopPropagation(); openEditModal('${item.id}', true)">x${qtyVal}</span>`;
+
+                        const circleMarker = isSelectMode
+                            ? `<div class="select-marker ${isSelected ? 'is-selected' : ''}"></div>`
+                            : `<div class="radio-circle checked" onclick="event.stopPropagation(); toggleItem('${item.id}')"></div>`;
+
+                        const row = document.createElement('div');
+                        row.className = `item-row ${isSelected ? 'selected-item' : ''}`;
+                        row.dataset.index = realIndex;
+                        row.dataset.id = item.id;
+
+                        if (isSelectMode) {
+                            row.onclick = () => toggleItemSelection(item.id);
+                            row.ontouchstart = (e) => startDragSelection(e, item.id);
+                            row.onmousedown = (e) => startDragSelection(e, item.id);
+                        } else {
+                            row.addEventListener('mousedown', (e) => initItemDrag(e, realIndex));
+                            row.addEventListener('touchstart', (e) => initItemDrag(e, realIndex), { passive: false });
+                        }
 
                         row.innerHTML = `
-                            <div class="radio-circle checked" onclick="event.stopPropagation(); toggleItem('${item.id}')"></div>
-                            <div class="item-name completed" onclick="event.stopPropagation(); openEditModal('${item.id}', false)">${escapeHtml(item.name)}${qtyHtml}</div>
-                            <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('${item.id}')" title="Delete item">&times;</button>
+                            ${circleMarker}
+                            <div class="item-name completed" ${!isSelectMode ? `onclick="event.stopPropagation(); openEditModal('${item.id}', false)"` : ''}>${escapeHtml(item.name)}${qtyHtml}</div>
+                            ${!isSelectMode ? `<button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('${item.id}')" title="Delete item">&times;</button>` : ''}
                         `;
                         container.appendChild(row);
                     });
                 }
             }
+        }
+
+        /* --- Drag Selection Engine in Select Mode --- */
+        function startDragSelection(e, initialId) {
+            if (!isSelectMode) return;
+            isDragSelecting = true;
+
+            const handleDragMove = (evt) => {
+                if (!isDragSelecting) return;
+                const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+                const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+
+                const targetEl = document.elementFromPoint(clientX, clientY);
+                if (!targetEl) return;
+                const rowEl = targetEl.closest('.item-row');
+                if (rowEl && rowEl.dataset.id) {
+                    const rowId = rowEl.dataset.id;
+                    if (!selectedItemIds.has(rowId)) {
+                        selectedItemIds.add(rowId);
+                        const titleEl = document.getElementById('mainTitle');
+                        titleEl.innerText = `${selectedItemIds.size} Selected`;
+                        renderList();
+                        updateSelectionBarState();
+                    }
+                }
+            };
+
+            const endDragSelection = () => {
+                isDragSelecting = false;
+                window.removeEventListener('mousemove', handleDragMove);
+                window.removeEventListener('touchmove', handleDragMove);
+                window.removeEventListener('mouseup', endDragSelection);
+                window.removeEventListener('touchend', endDragSelection);
+            };
+
+            window.addEventListener('mousemove', handleDragMove);
+            window.addEventListener('touchmove', handleDragMove, { passive: true });
+            window.addEventListener('mouseup', endDragSelection);
+            window.addEventListener('touchend', endDragSelection);
         }
 
         /* --- 2-Second Debounced Completion Handling --- */
@@ -1290,7 +1596,7 @@
                 renderList();
                 scheduleSync(`Toggle ${item.name}`);
 
-                // Reset 2-second timer so all items stay in view together until 2 seconds after the LAST click
+                // 2-second debounced timer: resets each tick so all ticked items stay together until 2s after the LAST tick
                 if (batchMoveTimer) clearTimeout(batchMoveTimer);
                 batchMoveTimer = setTimeout(() => {
                     pendingMoveIds.clear();
@@ -1405,7 +1711,7 @@
                 if (activeDragIndex !== null && currentTargetIndex !== null && activeDragIndex !== currentTargetIndex) {
                     const movedItem = currentItems.splice(activeDragIndex, 1)[0];
                     currentItems.splice(currentTargetIndex, 0, movedItem);
-                    scheduleSync("Reordered shopping list");
+                    scheduleSync("Reordered groceries list");
                 }
 
                 activeDragIndex = null;
