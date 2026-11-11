@@ -6,15 +6,15 @@
     "completed": false
   },
   {
-    "id": "id-1794350053380-om7dz",
-    "name": "Pencil",
-    "quantity": 6,
-    "completed": false
-  },
-  {
     "id": "id-1794363534573-5mu6c",
     "name": "Test2",
     "quantity": 1,
+    "completed": false
+  },
+  {
+    "id": "id-1794350053380-om7dz",
+    "name": "Pencil",
+    "quantity": 6,
     "completed": false
   },
   {
