@@ -15,13 +15,13 @@
     "id": "id-1794383680945-8wx9j",
     "name": "Test2",
     "quantity": 1,
-    "completed": false
+    "completed": true
   },
   {
     "id": "id-1794350053380-om7dz",
     "name": "Pencil",
     "quantity": 6,
-    "completed": false
+    "completed": true
   },
   {
     "id": "id-1794364858032-uosu3",
