@@ -68,5 +68,12 @@
     "quantity": 1,
     "completed": false,
     "section": "Others"
+  },
+  {
+    "id": "id-1794437847831-6abgk",
+    "name": "Chocolate",
+    "quantity": 1,
+    "completed": false,
+    "section": "Snacks and Lollies"
   }
 ]
