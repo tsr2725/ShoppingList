@@ -24,12 +24,6 @@
     "completed": false
   },
   {
-    "id": "id-1794363534573-5mu6c",
-    "name": "Test2",
-    "quantity": 1,
-    "completed": false
-  },
-  {
     "id": "id-1794364858032-uosu3",
     "name": "Test2",
     "quantity": 1,
@@ -51,6 +45,12 @@
     "id": "id-1794383706198-ie83w",
     "name": "Butter spread normal",
     "quantity": 3,
+    "completed": false
+  },
+  {
+    "id": "id-1794363534573-5mu6c",
+    "name": "Test2",
+    "quantity": 1,
     "completed": false
   },
   {
