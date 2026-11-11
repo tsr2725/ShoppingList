@@ -40,5 +40,12 @@
     "quantity": 1,
     "completed": false,
     "section": "Others"
+  },
+  {
+    "id": "id-1794437753631-f34u2",
+    "name": "Dried mango",
+    "quantity": 1,
+    "completed": false,
+    "section": "Snacks and Lollies"
   }
 ]
