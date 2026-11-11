@@ -12,6 +12,12 @@
     "completed": false
   },
   {
+    "id": "id-1794364858032-uosu3",
+    "name": "Test2",
+    "quantity": 1,
+    "completed": false
+  },
+  {
     "id": "id-1794350235781-2gpat",
     "name": "Butter spread normal",
     "quantity": 1,
@@ -25,12 +31,6 @@
   },
   {
     "id": "id-1794364816824-ma18v",
-    "name": "Test2",
-    "quantity": 1,
-    "completed": false
-  },
-  {
-    "id": "id-1794364858032-uosu3",
     "name": "Test2",
     "quantity": 1,
     "completed": false
