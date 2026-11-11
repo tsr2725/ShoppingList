@@ -12,12 +12,6 @@
     "completed": false
   },
   {
-    "id": "id-1794350053380-om7dz",
-    "name": "Pencil",
-    "quantity": 6,
-    "completed": false
-  },
-  {
     "id": "id-1794364816824-ma18v",
     "name": "Test2",
     "quantity": 1,
@@ -33,6 +27,12 @@
     "id": "id-1794349883964-hn4uo",
     "name": "Milk",
     "quantity": 18,
+    "completed": false
+  },
+  {
+    "id": "id-1794350053380-om7dz",
+    "name": "Pencil",
+    "quantity": 6,
     "completed": false
   }
 ]
