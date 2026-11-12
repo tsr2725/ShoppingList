@@ -66,7 +66,7 @@
     "id": "id-1794437839601-9jxbn",
     "name": "Pretzlels",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Others"
   },
   {
@@ -80,7 +80,7 @@
     "id": "id-1794437855062-gquc0",
     "name": "Shapes",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Others"
   },
   {
