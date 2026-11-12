@@ -94,7 +94,7 @@
     "id": "id-1794461953065-eryz5",
     "name": "Pineapple lumps",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Fruit and Veg"
   },
   {
