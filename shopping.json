@@ -180,5 +180,12 @@
     "quantity": 1,
     "completed": false,
     "section": "Cleaning"
+  },
+  {
+    "id": "id-1794474544081-zcp7t",
+    "name": "Pineapple lumps",
+    "quantity": 1,
+    "completed": false,
+    "section": "Snacks and Lollies"
   }
 ]
