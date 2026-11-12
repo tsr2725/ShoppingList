@@ -187,5 +187,12 @@
     "quantity": 1,
     "completed": false,
     "section": "Snacks and Lollies"
+  },
+  {
+    "id": "id-1794474581438-8e8s1",
+    "name": "Butter block",
+    "quantity": 1,
+    "completed": false,
+    "section": "Dairy, Eggs and Cheese"
   }
 ]
