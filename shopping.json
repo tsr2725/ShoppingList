@@ -52,7 +52,7 @@
     "id": "id-1794437759895-c23lx",
     "name": "Snakes",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Others"
   },
   {
