@@ -173,5 +173,12 @@
     "quantity": 2,
     "completed": false,
     "section": "Baking Items"
+  },
+  {
+    "id": "id-1794474500650-4p7du",
+    "name": "Persil powder 1 kg",
+    "quantity": 1,
+    "completed": false,
+    "section": "Cleaning"
   }
 ]
