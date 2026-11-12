@@ -145,5 +145,12 @@
     "quantity": 1,
     "completed": false,
     "section": "Personal Care and Health"
+  },
+  {
+    "id": "id-1794472533726-5c1ff",
+    "name": "Dove bar",
+    "quantity": 1,
+    "completed": false,
+    "section": "Personal Care and Health"
   }
 ]
