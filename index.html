@@ -206,7 +206,8 @@
         .bottom-bar-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
         .section-picker-popover { display: none; position: fixed; bottom: calc(84px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: calc(100% - 60px); max-width: 320px; max-height: 60vh; overflow-y: auto; background: var(--menu-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--menu-border); border-radius: 16px; box-shadow: var(--menu-shadow); padding: 8px 0; z-index: 950; }
-        .status { text-align: center; margin-top: 14px; font-size: 14px; font-weight: 500; color: var(--text-muted); min-height: 20px; }
+        .status { text-align: center; margin-top: 12px; font-size: 14px; font-weight: 500; color: var(--text-muted); min-height: 20px; }
+        .ai-status { text-align: center; margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--accent-color); min-height: 18px; }
         .empty-state { color: var(--text-muted); text-align: center; padding: 28px 0; font-style: italic; }
 
         .fab { position: fixed; bottom: calc(30px + env(safe-area-inset-bottom)); right: calc(30px + env(safe-area-inset-right)); width: 60px; height: 60px; background-color: var(--accent-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 4px 16px rgba(191, 161, 95, 0.4); cursor: pointer; border: none; transition: transform 0.2s, opacity 0.2s; z-index: 99; }
@@ -296,6 +297,13 @@
 
                 <div class="menu-divider"></div>
 
+                <div class="menu-item" onclick="testGeminiConnection()">
+                    <div class="menu-item-left">
+                        <span class="menu-item-icon">✨</span>
+                        <span>Test Gemini API</span>
+                    </div>
+                </div>
+
                 <div class="menu-item" onclick="shareShoppingList()">
                     <div class="menu-item-left">
                         <span class="menu-item-icon">⎘</span>
@@ -333,6 +341,7 @@
         </div>
         
         <div id="status" class="status"></div>
+        <div id="aiStatus" class="ai-status"></div>
     </div>
 
     <!-- Apple Reminders Floating Bottom Action Bar for Selection Mode -->
@@ -442,25 +451,45 @@
         ];
 
         const LOCAL_CATEGORY_MAP = {
-            "Snacks and Lollies": ["dried mango", "chips", "crisps", "snack", "lollies", "candy", "chocolate", "popcorn", "nuts", "biscuit", "cookie", "pretzels", "crackers", "sweets"],
+            "Snacks and Lollies": [
+                "dried mango", "lolly snakes", "snakes", "lolly", "lollies", "gummies", "gummy",
+                "jubes", "licorice", "liquorice", "marshmallow", "marshmallows", "toffee", "fudge",
+                "chips", "crisps", "snack", "candy", "chocolate", "popcorn", "nuts", "biscuit",
+                "biscuits", "cookie", "cookies", "pretzels", "crackers", "sweets", "muesli bar"
+            ],
+            "Bakery": [
+                "cake", "cakes", "cupcake", "cupcakes", "brownie", "brownies", "cheesecake",
+                "pastry", "pastries", "pie", "pies", "donut", "donuts", "doughnut", "doughnuts",
+                "scone", "scones", "tart", "bread", "bun", "buns", "croissant", "bagel", "muffin", "loaf", "rolls"
+            ],
             "Dairy, Eggs and Cheese": ["milk", "cheese", "butter", "ghee", "yogurt", "yoghurt", "dahi", "cream", "egg", "eggs", "paneer", "curd"],
-            "Fruit and Veg": ["mango", "apple", "apples", "banana", "bananas", "cucumber", "tomato", "tomatoes", "onion", "onions", "potato", "potatoes", "kheera", "spinach", "lettuce", "berry", "berries", "grape", "grapes", "lemon", "lime", "orange", "garlic", "ginger"],
-            "Spices and Seasonings": ["haldi", "turmeric", "salt", "pepper", "spice", "spices", "chili", "chilli", "cumin", "coriander", "paprika", "seasoning", "masala", "cinnamon"],
-            "Cleaning": ["soap", "detergent", "bleach", "sponge", "cleaner", "wipes", "dishwash", "paper towel", "trash bag"],
-            "Bakery": ["bread", "bun", "croissant", "bagel", "muffin", "loaf"],
-            "Breads and Cereals": ["cereal", "oats", "granola", "cornflakes"],
-            "Beverages": ["juice", "soda", "water", "coke", "drink", "sparkling"],
+            "Fruit and Veg": ["mango", "apple", "apples", "banana", "bananas", "cucumber", "tomato", "tomatoes", "onion", "onions", "potato", "potatoes", "kheera", "spinach", "lettuce", "berry", "berries", "grape", "grapes", "lemon", "lime", "orange", "garlic", "ginger", "avocado", "carrot", "broccoli"],
+            "Spices and Seasonings": ["haldi", "turmeric", "salt", "pepper", "spice", "spices", "chili", "chilli", "cumin", "coriander", "paprika", "seasoning", "masala", "cinnamon", "oregano", "basil"],
+            "Cleaning": ["soap", "detergent", "bleach", "sponge", "cleaner", "wipes", "dishwash", "paper towel", "trash bag", "rubbish bag"],
+            "Breads and Cereals": ["cereal", "oats", "granola", "cornflakes", "weet-bix", "weetbix", "porridge"],
+            "Beverages": ["juice", "soda", "water", "coke", "drink", "sparkling", "lemonade", "soft drink"],
             "Coffee and Tea": ["coffee", "tea", "chai", "espresso", "matcha"],
-            "Meat": ["chicken", "beef", "pork", "lamb", "bacon", "steak", "sausage", "meat"],
+            "Meat": ["chicken", "beef", "pork", "lamb", "bacon", "steak", "sausage", "sausages", "meat", "mince"],
             "Seafood": ["fish", "salmon", "shrimp", "prawns", "tuna", "crab"],
-            "Pasta, Rice and Beans": ["rice", "pasta", "spaghetti", "noodles", "beans", "lentils", "dal"],
-            "Sauces and Condiments": ["ketchup", "mayo", "mayonnaise", "mustard", "sauce", "soy sauce", "vinegar"],
-            "Household Items": ["foil", "ziploc", "napkins", "batteries", "lightbulb"],
-            "Personal Care and Health": ["shampoo", "toothpaste", "toothbrush", "deodorant", "lotion", "vitamins"],
+            "Pasta, Rice and Beans": ["rice", "pasta", "spaghetti", "noodles", "beans", "lentils", "dal", "chickpeas"],
+            "Sauces and Condiments": ["ketchup", "tomato sauce", "mayo", "mayonnaise", "mustard", "sauce", "soy sauce", "vinegar", "chutney"],
+            "Household Items": ["foil", "ziploc", "napkins", "batteries", "lightbulb", "glad wrap", "baking paper", "toilet paper", "tissues"],
+            "Personal Care and Health": ["shampoo", "conditioner", "toothpaste", "toothbrush", "deodorant", "lotion", "vitamins", "panadol", "body wash"],
             "Pet Care": ["cat food", "dog food", "pet treats", "litter"],
-            "Frozen Foods": ["ice cream", "frozen pizza", "frozen peas", "frozen veggies"],
-            "Wine, Beer and Spirits": ["wine", "beer", "whiskey", "vodka", "cider", "alcohol"]
+            "Frozen Foods": ["ice cream", "frozen pizza", "frozen peas", "frozen veggies", "frozen berries"],
+            "Wine, Beer and Spirits": ["wine", "beer", "whiskey", "vodka", "cider", "alcohol", "gin"]
         };
+
+        function showAiStatus(msg, isError = false) {
+            const el = document.getElementById('aiStatus');
+            if (!el) return;
+            el.style.color = isError ? 'var(--delete-hover)' : 'var(--accent-color)';
+            el.innerText = msg;
+            clearTimeout(el._timer);
+            el._timer = setTimeout(() => {
+                if (el.innerText === msg) el.innerText = "";
+            }, 4500);
+        }
 
         function checkAccessKeys() {
             let token = localStorage.getItem("gh_shopping_pat");
@@ -492,6 +521,39 @@
                 }
             } catch (e) {
                 alert("Incorrect passphrase. Please try again.");
+            }
+        }
+
+        async function testGeminiConnection() {
+            document.getElementById('popoverMenu').style.display = 'none';
+            const geminiKey = localStorage.getItem("gemini_api_key");
+            if (!geminiKey) {
+                alert("No Gemini API key found in storage. Please unlock with your passphrase first.");
+                return;
+            }
+
+            showAiStatus("✨ Testing Gemini API connection...");
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiKey}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: "Reply with ONLY the word: Connected" }] }]
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    showAiStatus("✓ Gemini API Connected (gemini-3.5-flash-lite)");
+                    alert("Success! Gemini API is active and working properly.");
+                } else {
+                    const errMsg = data.error?.message || `HTTP ${res.status}`;
+                    showAiStatus(`⚠️ Gemini API Error: ${errMsg}`, true);
+                    alert(`Gemini API Error:\n${errMsg}`);
+                }
+            } catch (err) {
+                showAiStatus("⚠️ Network error reaching Gemini API", true);
+                alert("Network error reaching Gemini API.");
             }
         }
 
@@ -553,31 +615,61 @@
         async function categorizeItemName(rawName) {
             const lower = rawName.toLowerCase().trim();
 
-            if (lower.includes("dried mango")) return "Snacks and Lollies";
+            // 1. Priority override rules
+            if (lower.includes("dried mango")) {
+                showAiStatus("⚡ Local Match → Snacks and Lollies");
+                return "Snacks and Lollies";
+            }
 
+            // 2. Local Dictionary Check
             for (const [section, keywords] of Object.entries(LOCAL_CATEGORY_MAP)) {
                 for (const kw of keywords) {
-                    if (lower.includes(kw)) return section;
+                    if (lower.includes(kw)) {
+                        showAiStatus(`⚡ Local Match → ${section}`);
+                        return section;
+                    }
                 }
             }
 
+            // 3. Gemini API Fallback (using current gemini-3.5-flash-lite endpoint)
             const geminiKey = localStorage.getItem("gemini_api_key");
             if (geminiKey) {
+                showAiStatus(`✨ Asking Gemini AI for "${rawName}"...`);
                 try {
-                    const promptText = `Categorize the grocery item "${rawName}" into exactly ONE of these categories: ${ALL_SECTIONS.join(", ")}. Reply with ONLY the category name.`;
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+                    const promptText = `Categorize the grocery item "${rawName}" into exactly ONE of these categories: ${ALL_SECTIONS.join(", ")}. Reply with ONLY the exact category name and no punctuation.`;
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiKey}`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: promptText }] }],
+                            generationConfig: { temperature: 0 }
+                        })
                     });
+
+                    const data = await res.json();
                     if (res.ok) {
-                        const data = await res.json();
-                        const answer = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-                        if (answer && ALL_SECTIONS.includes(answer)) {
-                            return answer;
+                        const rawAnswer = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                        const cleanedAnswer = rawAnswer.replace(/[*_`".]/g, '').trim();
+                        const matchedSection = ALL_SECTIONS.find(
+                            sec => sec.toLowerCase() === cleanedAnswer.toLowerCase()
+                        );
+
+                        if (matchedSection) {
+                            showAiStatus(`✨ Gemini AI → ${matchedSection}`);
+                            return matchedSection;
+                        } else {
+                            showAiStatus(`⚠️ Gemini returned unrecognized: "${cleanedAnswer}" → Others`, true);
                         }
+                    } else {
+                        const errMsg = data.error?.message || `HTTP ${res.status}`;
+                        showAiStatus(`⚠️ Gemini API Error: ${errMsg}`, true);
                     }
-                } catch (e) { console.log("API categorization fallback error:", e); }
+                } catch (e) {
+                    console.error("Gemini API fallback error:", e);
+                    showAiStatus("⚠️ Network error calling Gemini API", true);
+                }
+            } else {
+                showAiStatus("⚠️ No Gemini API Key found → Others", true);
             }
 
             return "Others";
@@ -1380,6 +1472,8 @@
             const newName = formatItemName(document.getElementById('editItemName').value);
             const newQty = parseInt(document.getElementById('editItemQty').value, 10) || 1;
 
+            closeEditModal();
+
             if (newName) {
                 item.name = newName;
                 item.quantity = newQty;
@@ -1387,7 +1481,6 @@
                 renderList();
                 scheduleSync(`Edit ${item.name}`);
             }
-            closeEditModal();
         }
 
         function escapeHtml(str) {
