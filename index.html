@@ -128,12 +128,19 @@
             }
         }
 
-        html { background-color: var(--bg-color); height: 100%; }
+        html {
+            background-color: var(--bg-color);
+            height: 100%;
+            overscroll-behavior: none;
+            overscroll-behavior-y: none;
+        }
         body {
             background-color: var(--bg-color); color: var(--text-color); margin: 0;
             padding: max(12px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(32px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
             display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box;
+            overscroll-behavior: none;
+            overscroll-behavior-y: none;
         }
 
         .container { width: 100%; max-width: 560px; padding-bottom: 90px; box-sizing: border-box; position: relative; }
@@ -158,8 +165,6 @@
         .menu-item-left { display: flex; align-items: center; gap: 12px; }
         .menu-item-icon { font-size: 16px; width: 20px; text-align: center; color: var(--text-color); }
         .menu-item-arrow { color: var(--text-muted); font-size: 13px; }
-        .menu-item.danger { color: var(--delete-hover); }
-        .menu-item.danger .menu-item-icon { color: var(--delete-hover); }
         .menu-divider { height: 1px; background-color: var(--card-border); margin: 4px 0; }
         .submenu-panel { display: none; padding-left: 8px; background: rgba(0, 0, 0, 0.02); border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border); }
 
@@ -169,8 +174,13 @@
 
         .item-row {
             display: flex; align-items: center; padding: 14px 12px; border-bottom: 1px solid var(--item-border);
-            user-select: none; touch-action: pan-y; background: transparent; transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease, opacity 0.2s ease;
+            user-select: none; -webkit-user-select: none; touch-action: pan-y; background: transparent;
+            transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease, opacity 0.2s ease;
             position: relative; will-change: transform; border-radius: 12px; margin-bottom: 2px;
+        }
+        body.select-mode .item-row {
+            touch-action: none;
+            cursor: pointer;
         }
         .item-row.selected-item { background-color: var(--selected-row-bg) !important; }
         .item-row.is-dragging { position: fixed; z-index: 1000; pointer-events: none; box-shadow: var(--drag-card-shadow); border-radius: 12px; padding: 14px 18px; background: var(--modal-bg); border: 1px solid var(--card-border); box-sizing: border-box; will-change: transform; transition: none !important; }
@@ -180,7 +190,7 @@
         .radio-circle.checked { border-color: var(--accent-color); background-color: var(--accent-color); }
         .radio-circle.checked::after { content: ""; width: 5px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 2px; }
 
-        .select-marker { width: 22px; height: 22px; border: 2px solid var(--circle-border); background-color: transparent; border-radius: 50%; margin-right: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s ease; }
+        .select-marker { width: 22px; height: 22px; border: 2px solid var(--circle-border); background-color: transparent; border-radius: 50%; margin-right: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s ease; }
         .select-marker.is-selected { border-color: var(--selection-blue); background-color: var(--selection-blue); }
         .select-marker.is-selected::after { content: ""; width: 5px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 2px; }
 
@@ -214,7 +224,7 @@
         .fab:active { transform: scale(0.95); }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; padding: 20px; box-sizing: border-box; }
-        .modal-content { background: var(--modal-bg); padding: 24px; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); text-align: center; }
+        .modal-content { background: var(--modal-bg); padding: 24px; border-radius: 16px; width: 100%; max-width: 420px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); text-align: center; max-height: 85vh; display: flex; flex-direction: column; }
         .modal-content h3 { margin-top: 0; color: var(--accent-color); }
 
         .modal-input { width: 100%; padding: 12px; margin: 12px 0; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-color); border-radius: 8px; font-size: 16px; box-sizing: border-box; }
@@ -226,6 +236,17 @@
         .qty-select-wheel { font-size: 17px; font-weight: 700; color: var(--accent-color); background: var(--badge-bg); border: 1px solid var(--accent-color); padding: 6px 14px; cursor: pointer; text-align: center; border-radius: 8px; outline: none; }
         .modal-btn { background-color: var(--accent-color); color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 8px; }
         .modal-btn.secondary { background-color: var(--secondary-btn-bg); color: var(--secondary-btn-text); margin-top: 10px; }
+
+        /* Edit Sections Modal List */
+        .sections-editor-list { overflow-y: auto; flex-grow: 1; margin: 8px 0 12px 0; border-top: 1px solid var(--item-border); border-bottom: 1px solid var(--item-border); text-align: left; }
+        .section-edit-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 6px; border-bottom: 1px solid var(--item-border); gap: 8px; }
+        .section-edit-name { flex-grow: 1; font-size: 15px; font-weight: 500; color: var(--text-color); cursor: pointer; }
+        .section-edit-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .sec-mini-btn { background: var(--secondary-btn-bg); color: var(--text-color); border: none; border-radius: 6px; width: 28px; height: 28px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .sec-mini-btn.danger { color: var(--delete-hover); }
+        .add-section-row { display: flex; gap: 8px; margin-bottom: 6px; }
+        .add-section-row input { margin: 0; padding: 10px 12px; font-size: 15px; }
+        .add-section-row button { margin: 0; width: auto; padding: 10px 16px; font-size: 15px; flex-shrink: 0; }
 
         #reader { width: 100%; aspect-ratio: 1 / 1; border-radius: 12px; overflow: hidden; margin-bottom: 12px; background: #000000; }
         #reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
@@ -264,34 +285,8 @@
                     <span class="menu-item-arrow" id="sectionsArrow">›</span>
                 </div>
                 <div class="submenu-panel" id="sectionsSubmenu">
-                    <div class="menu-item" onclick="alert('Select items and tap the section icon at the bottom to assign sections.')">
-                        <span style="padding-left: 20px;">Assign via Select Mode</span>
-                    </div>
-                    <div class="menu-item" onclick="resetLearnedCategories()">
-                        <span style="padding-left: 20px;">Reset Learned Rules</span>
-                    </div>
-                </div>
-
-                <div class="menu-item" onclick="toggleSubmenu('sortSubmenu')">
-                    <div class="menu-item-left">
-                        <span class="menu-item-icon">⇅</span>
-                        <span>Sort By</span>
-                    </div>
-                    <span class="menu-item-arrow" id="sortArrow">›</span>
-                </div>
-                <div class="submenu-panel" id="sortSubmenu">
-                    <div class="menu-item" onclick="setSortMode('manual')">
-                        <span style="padding-left: 20px;" id="sortManualCheck">✓ Manual</span>
-                    </div>
-                    <div class="menu-item" onclick="setSortMode('title')">
-                        <span style="padding-left: 20px;" id="sortTitleCheck">Title</span>
-                    </div>
-                </div>
-
-                <div class="menu-item" onclick="toggleShowCompletedFromMenu()">
-                    <div class="menu-item-left">
-                        <span class="menu-item-icon">👁</span>
-                        <span id="showCompletedLabel">Hide Completed</span>
+                    <div class="menu-item" onclick="openEditSectionsModal()">
+                        <span style="padding-left: 20px;">Edit Sections</span>
                     </div>
                 </div>
 
@@ -311,26 +306,10 @@
                     </div>
                 </div>
 
-                <div class="menu-item" onclick="alert('List template saved!')">
-                    <div class="menu-item-left">
-                        <span class="menu-item-icon">⧉</span>
-                        <span>Save as Template</span>
-                    </div>
-                </div>
-
                 <div class="menu-item" onclick="window.print()">
                     <div class="menu-item-left">
                         <span class="menu-item-icon">⎙</span>
                         <span>Print</span>
-                    </div>
-                </div>
-
-                <div class="menu-divider"></div>
-
-                <div class="menu-item danger" onclick="clearAllItems()">
-                    <div class="menu-item-left">
-                        <span class="menu-item-icon">🗑</span>
-                        <span>Delete List</span>
                     </div>
                 </div>
             </div>
@@ -371,6 +350,19 @@
     <div class="section-picker-popover" id="sectionPickerPopover"></div>
 
     <button class="fab" id="fabBtn" onclick="openModal()">+</button>
+
+    <!-- Edit Sections Modal -->
+    <div class="modal" id="editSectionsModal">
+        <div class="modal-content">
+            <h3>Edit Sections</h3>
+            <div class="add-section-row">
+                <input type="text" id="newSectionInput" class="modal-input" placeholder="New section name..." onkeydown="if(event.key==='Enter') addNewSection()">
+                <button class="modal-btn" onclick="addNewSection()">Add</button>
+            </div>
+            <div class="sections-editor-list" id="sectionsEditorList"></div>
+            <button class="modal-btn" onclick="closeEditSectionsModal()">Done</button>
+        </div>
+    </div>
 
     <!-- Password Gatekeeper Modal -->
     <div class="modal" id="passwordModal">
@@ -445,13 +437,33 @@
 
         let PERSONAL_ACCESS_TOKEN = "";
 
-        const ALL_SECTIONS = [
+        const DEFAULT_SECTIONS = [
             "Dairy, Eggs and Cheese", "Fruit and Veg", "Spices and Seasonings", "Snacks and Lollies",
             "Cleaning", "Baby Care", "Bakery", "Baking Items", "Beverages", "Breads and Cereals",
             "Canned Foods and Soups", "Coffee and Tea", "Deli", "Frozen Foods", "Household Items",
             "Meat", "Oils and Dressings", "Pasta, Rice and Beans", "Personal Care and Health",
             "Pet Care", "Sauces and Condiments", "Seafood", "Wine, Beer and Spirits", "Others"
         ];
+
+        function loadSavedSections() {
+            try {
+                const saved = JSON.parse(localStorage.getItem("custom_sections_v1"));
+                if (Array.isArray(saved) && saved.length > 0) {
+                    if (!saved.includes("Others")) saved.push("Others");
+                    return saved;
+                }
+            } catch (e) {}
+            return [...DEFAULT_SECTIONS];
+        }
+
+        let ALL_SECTIONS = loadSavedSections();
+
+        function saveSectionsList() {
+            if (!ALL_SECTIONS.includes("Others")) ALL_SECTIONS.push("Others");
+            localStorage.setItem("custom_sections_v1", JSON.stringify(ALL_SECTIONS));
+            populateSectionPickerPopover();
+            renderList();
+        }
 
         // Built-in offline backup dictionary (automatically upgraded when categories.json loads)
         let categoryDatabase = {
@@ -473,7 +485,6 @@
             }
         };
 
-        // Precompiled sorted keyword rules for fast whole-word regex matching
         let compiledKeywordRules = [];
 
         function compileCategoryRules(db) {
@@ -494,13 +505,11 @@
                     }
                 }
             }
-            // Sort longest phrases first so multi-word matches always beat single-word matches
             rules.sort((a, b) => b.keyword.length - a.keyword.length);
             compiledKeywordRules = rules;
         }
 
         async function loadExternalCategories() {
-            // Load cached categories.json immediately for instant offline readiness
             const cached = localStorage.getItem("cached_categories_v1");
             if (cached) {
                 try {
@@ -510,7 +519,6 @@
                 compileCategoryRules(categoryDatabase);
             }
 
-            // Fetch latest categories.json from the repository
             try {
                 const res = await fetch(`${CATEGORIES_FILE_PATH}?t=${Date.now()}`);
                 if (res.ok) {
@@ -539,14 +547,6 @@
             const learned = getLearnedCategories();
             learned[itemName.toLowerCase().trim()] = sectionName;
             localStorage.setItem("learned_categories_v1", JSON.stringify(learned));
-        }
-
-        function resetLearnedCategories() {
-            document.getElementById('popoverMenu').style.display = 'none';
-            if (confirm("Reset all custom learned item sections?")) {
-                localStorage.removeItem("learned_categories_v1");
-                showAiStatus("✓ Learned rules cleared");
-            }
         }
 
         function showAiStatus(msg, isError = false) {
@@ -630,10 +630,10 @@
         let html5QrCode = null;
         let currentItems = [];
         let currentSha = "";
-        let showCompleted = true;
+        let showCompleted = false; // Always keep completed items hidden unless Show is clicked
         let isSelectMode = false;
         let selectedItemIds = new Set();
-        let currentSortMode = "manual";
+        let lastSelectedItemId = null;
 
         let syncTimer = null;
         let pollTimer = null;
@@ -656,7 +656,12 @@
         let rafId = null;
         let rowHeight = 0;
         let dragHoldTimer = null;
+
+        // Touch / Mouse Drag Selection State
         let isDragSelecting = false;
+        let dragSelectAction = 'select';
+        let didDragSelectMove = false;
+        let dragTouchedIds = new Set();
 
         function formatItemName(str) {
             if (!str) return "";
@@ -695,13 +700,15 @@
             // Tier 2: Exact Phrase Match from categories.json
             if (categoryDatabase.exact && categoryDatabase.exact[lower]) {
                 const exactSec = categoryDatabase.exact[lower];
-                showAiStatus(`⚡ NZ Dictionary → ${exactSec}`);
-                return exactSec;
+                if (ALL_SECTIONS.includes(exactSec)) {
+                    showAiStatus(`⚡ NZ Dictionary → ${exactSec}`);
+                    return exactSec;
+                }
             }
 
             // Tier 3: Whole-Word Boundary Regex Match (longest phrase first)
             for (const rule of compiledKeywordRules) {
-                if (rule.regex.test(lower)) {
+                if (rule.regex.test(lower) && ALL_SECTIONS.includes(rule.section)) {
                     showAiStatus(`⚡ NZ Dictionary → ${rule.section}`);
                     return rule.section;
                 }
@@ -821,7 +828,7 @@
                 const item = document.createElement('div');
                 item.className = 'menu-item';
                 item.onclick = () => moveSelectedToSection(sec);
-                item.innerHTML = `<span>${sec}</span>`;
+                item.innerHTML = `<span>${escapeHtml(sec)}</span>`;
                 popover.appendChild(item);
             });
         }
@@ -837,9 +844,131 @@
             el.style.display = el.style.display === 'block' ? 'none' : 'block';
         }
 
+        /* --- Edit Sections Modal Handlers --- */
+        function openEditSectionsModal() {
+            document.getElementById('popoverMenu').style.display = 'none';
+            document.getElementById('newSectionInput').value = '';
+            renderSectionsEditorList();
+            document.getElementById('editSectionsModal').style.display = 'flex';
+        }
+
+        function closeEditSectionsModal() {
+            document.getElementById('editSectionsModal').style.display = 'none';
+        }
+
+        function renderSectionsEditorList() {
+            const listEl = document.getElementById('sectionsEditorList');
+            listEl.innerHTML = '';
+
+            ALL_SECTIONS.forEach((sec, idx) => {
+                const isOthers = sec === "Others";
+                const row = document.createElement('div');
+                row.className = 'section-edit-row';
+
+                row.innerHTML = `
+                    <div class="section-edit-name" onclick="${!isOthers ? `renameSection(${idx})` : ''}">${escapeHtml(sec)}</div>
+                    <div class="section-edit-actions">
+                        <button type="button" class="sec-mini-btn" onclick="moveSectionOrder(${idx}, -1)" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''} title="Move Up">↑</button>
+                        <button type="button" class="sec-mini-btn" onclick="moveSectionOrder(${idx}, 1)" ${idx === ALL_SECTIONS.length - 1 ? 'disabled style="opacity:0.3"' : ''} title="Move Down">↓</button>
+                        ${!isOthers ? `<button type="button" class="sec-mini-btn" onclick="renameSection(${idx})" title="Rename">✎</button>` : ''}
+                        ${!isOthers ? `<button type="button" class="sec-mini-btn danger" onclick="deleteSection(${idx})" title="Delete">✕</button>` : ''}
+                    </div>
+                `;
+                listEl.appendChild(row);
+            });
+        }
+
+        function addNewSection() {
+            const input = document.getElementById('newSectionInput');
+            const raw = input.value.trim();
+            if (!raw) return;
+
+            const exists = ALL_SECTIONS.some(s => s.toLowerCase() === raw.toLowerCase());
+            if (exists) {
+                alert("That section already exists.");
+                return;
+            }
+
+            const othersIdx = ALL_SECTIONS.indexOf("Others");
+            if (othersIdx !== -1) {
+                ALL_SECTIONS.splice(othersIdx, 0, raw);
+            } else {
+                ALL_SECTIONS.push(raw);
+            }
+
+            input.value = '';
+            saveSectionsList();
+            renderSectionsEditorList();
+        }
+
+        function moveSectionOrder(index, direction) {
+            const targetIdx = index + direction;
+            if (targetIdx < 0 || targetIdx >= ALL_SECTIONS.length) return;
+            const temp = ALL_SECTIONS[index];
+            ALL_SECTIONS[index] = ALL_SECTIONS[targetIdx];
+            ALL_SECTIONS[targetIdx] = temp;
+            saveSectionsList();
+            renderSectionsEditorList();
+        }
+
+        function renameSection(index) {
+            const oldName = ALL_SECTIONS[index];
+            if (!oldName || oldName === "Others") return;
+
+            const newName = prompt("Rename section:", oldName);
+            if (!newName || !newName.trim() || newName.trim() === oldName) return;
+
+            const cleanNew = newName.trim();
+            if (ALL_SECTIONS.some((s, i) => i !== index && s.toLowerCase() === cleanNew.toLowerCase())) {
+                alert("A section with that name already exists.");
+                return;
+            }
+
+            ALL_SECTIONS[index] = cleanNew;
+
+            let updatedItems = false;
+            currentItems.forEach(item => {
+                if (item.section === oldName) {
+                    item.section = cleanNew;
+                    updatedItems = true;
+                }
+            });
+
+            saveSectionsList();
+            renderSectionsEditorList();
+            if (updatedItems) {
+                scheduleSync(`Renamed section ${oldName} to ${cleanNew}`);
+            }
+        }
+
+        function deleteSection(index) {
+            const secName = ALL_SECTIONS[index];
+            if (!secName || secName === "Others") return;
+
+            if (!confirm(`Delete section "${secName}"? Any items in it will be moved to Others.`)) return;
+
+            ALL_SECTIONS.splice(index, 1);
+
+            let movedItems = false;
+            currentItems.forEach(item => {
+                if (item.section === secName) {
+                    item.section = "Others";
+                    movedItems = true;
+                }
+            });
+
+            saveSectionsList();
+            renderSectionsEditorList();
+            if (movedItems) {
+                scheduleSync(`Deleted section ${secName}`);
+            }
+        }
+
+        /* --- Select Mode (with Shift-Click & Touch Drag Selection) --- */
         function toggleSelectMode() {
             isSelectMode = !isSelectMode;
             selectedItemIds.clear();
+            lastSelectedItemId = null;
             document.getElementById('popoverMenu').style.display = 'none';
             document.getElementById('sectionPickerPopover').style.display = 'none';
 
@@ -850,6 +979,7 @@
             const fab = document.getElementById('fabBtn');
 
             if (isSelectMode) {
+                document.body.classList.add('select-mode');
                 titleEl.innerText = "Select Reminders";
                 pillEl.style.display = 'none';
                 finishBtn.style.display = 'flex';
@@ -857,6 +987,7 @@
                 fab.style.opacity = '0';
                 fab.style.pointerEvents = 'none';
             } else {
+                document.body.classList.remove('select-mode');
                 titleEl.innerText = "Groceries";
                 pillEl.style.display = 'flex';
                 finishBtn.style.display = 'none';
@@ -869,14 +1000,7 @@
             updateSelectionBarState();
         }
 
-        function toggleItemSelection(id) {
-            if (!isSelectMode) return;
-            if (selectedItemIds.has(id)) {
-                selectedItemIds.delete(id);
-            } else {
-                selectedItemIds.add(id);
-            }
-
+        function updateSelectionUI() {
             const titleEl = document.getElementById('mainTitle');
             if (selectedItemIds.size === 0) {
                 titleEl.innerText = "Select Reminders";
@@ -884,8 +1008,114 @@
                 titleEl.innerText = `${selectedItemIds.size} Selected`;
             }
 
-            renderList();
+            document.querySelectorAll('#listContainer .item-row').forEach(rowEl => {
+                const id = rowEl.dataset.id;
+                const isSel = selectedItemIds.has(id);
+                rowEl.classList.toggle('selected-item', isSel);
+                const marker = rowEl.querySelector('.select-marker');
+                if (marker) marker.classList.toggle('is-selected', isSel);
+            });
+
             updateSelectionBarState();
+        }
+
+        function toggleItemSelection(id, e = null) {
+            if (!isSelectMode) return;
+
+            // Shift + Click range selection
+            if (e && e.shiftKey && lastSelectedItemId) {
+                const visibleIds = Array.from(document.querySelectorAll('#listContainer .item-row'))
+                    .map(el => el.dataset.id)
+                    .filter(Boolean);
+
+                const startIdx = visibleIds.indexOf(lastSelectedItemId);
+                const endIdx = visibleIds.indexOf(id);
+
+                if (startIdx !== -1 && endIdx !== -1) {
+                    const minIdx = Math.min(startIdx, endIdx);
+                    const maxIdx = Math.max(startIdx, endIdx);
+                    for (let i = minIdx; i <= maxIdx; i++) {
+                        selectedItemIds.add(visibleIds[i]);
+                    }
+                    lastSelectedItemId = id;
+                    updateSelectionUI();
+                    return;
+                }
+            }
+
+            if (selectedItemIds.has(id)) {
+                selectedItemIds.delete(id);
+            } else {
+                selectedItemIds.add(id);
+            }
+            lastSelectedItemId = id;
+            updateSelectionUI();
+        }
+
+        function startDragSelection(e, initialId) {
+            if (!isSelectMode) return;
+
+            // Let Shift+Click be handled cleanly by row.onclick
+            if (e.shiftKey) return;
+
+            isDragSelecting = true;
+            didDragSelectMove = false;
+            dragTouchedIds.clear();
+            dragTouchedIds.add(initialId);
+
+            // Follow Apple Reminders behavior: if starting on an unselected item, drag selects;
+            // if starting on an already-selected item, drag deselects.
+            dragSelectAction = selectedItemIds.has(initialId) ? 'deselect' : 'select';
+
+            const applyDragActionToId = (targetId) => {
+                if (!targetId || dragTouchedIds.has(targetId)) return;
+                dragTouchedIds.add(targetId);
+
+                if (!didDragSelectMove) {
+                    didDragSelectMove = true;
+                    // Apply action to the initial item as soon as dragging begins
+                    if (dragSelectAction === 'select') {
+                        selectedItemIds.add(initialId);
+                    } else {
+                        selectedItemIds.delete(initialId);
+                    }
+                }
+
+                if (dragSelectAction === 'select') {
+                    selectedItemIds.add(targetId);
+                } else {
+                    selectedItemIds.delete(targetId);
+                }
+                lastSelectedItemId = targetId;
+                updateSelectionUI();
+            };
+
+            const handleDragMove = (evt) => {
+                if (!isDragSelecting) return;
+                if (evt.cancelable) evt.preventDefault();
+
+                const touch = evt.touches ? evt.touches[0] : evt;
+                const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (!targetEl) return;
+
+                const rowEl = targetEl.closest('.item-row');
+                if (rowEl && rowEl.dataset.id) {
+                    applyDragActionToId(rowEl.dataset.id);
+                }
+            };
+
+            const endDragSelection = () => {
+                isDragSelecting = false;
+                window.removeEventListener('mousemove', handleDragMove);
+                window.removeEventListener('touchmove', handleDragMove);
+                window.removeEventListener('mouseup', endDragSelection);
+                window.removeEventListener('touchend', endDragSelection);
+            };
+
+            window.addEventListener('mousemove', handleDragMove);
+            window.addEventListener('touchmove', handleDragMove, { passive: false });
+            window.addEventListener('mouseup', endDragSelection);
+            window.addEventListener('touchend', endDragSelection);
         }
 
         function updateSelectionBarState() {
@@ -943,6 +1173,7 @@
             const count = selectedItemIds.size;
             currentItems = currentItems.filter(i => !selectedItemIds.has(i.id));
             selectedItemIds.clear();
+            lastSelectedItemId = null;
             
             const titleEl = document.getElementById('mainTitle');
             titleEl.innerText = "Select Reminders";
@@ -976,26 +1207,6 @@
             scheduleSync(`Moved items to ${sectionName}`);
         }
 
-        function toggleShowCompletedFromMenu() {
-            showCompleted = !showCompleted;
-            document.getElementById('showCompletedLabel').innerText = showCompleted ? 'Hide Completed' : 'Show Completed';
-            document.getElementById('popoverMenu').style.display = 'none';
-            renderList();
-        }
-
-        function setSortMode(mode) {
-            currentSortMode = mode;
-            document.getElementById('sortManualCheck').innerText = mode === 'manual' ? '✓ Manual' : 'Manual';
-            document.getElementById('sortTitleCheck').innerText = mode === 'title' ? '✓ Title' : 'Title';
-            
-            if (mode === 'title') {
-                currentItems.sort((a, b) => a.name.localeCompare(b.name));
-                scheduleSync("Sorted list by title");
-            }
-            document.getElementById('popoverMenu').style.display = 'none';
-            renderList();
-        }
-
         function shareShoppingList() {
             document.getElementById('popoverMenu').style.display = 'none';
             if (navigator.share) {
@@ -1007,17 +1218,6 @@
             } else {
                 navigator.clipboard.writeText(window.location.href);
                 alert("Groceries list URL copied to clipboard!");
-            }
-        }
-
-        function clearAllItems() {
-            document.getElementById('popoverMenu').style.display = 'none';
-            if (confirm("Are you sure you want to delete all items in this list?")) {
-                currentItems = [];
-                pendingMoveIds.clear();
-                selectedItemIds.clear();
-                renderList();
-                scheduleSync("Cleared list");
             }
         }
 
@@ -1200,11 +1400,11 @@
             }
 
             if (activeItems.length === 0 && completedItems.length > 0 && !showCompleted) {
-                container.innerHTML = '<div class="empty-state">All items completed! Tap menu to show.</div>';
+                container.innerHTML = '<div class="empty-state">All items completed! Tap Show below to view.</div>';
             } else {
                 const sectionGroups = {};
                 activeItems.forEach(item => {
-                    const sec = item.section || "Others";
+                    const sec = ALL_SECTIONS.includes(item.section) ? item.section : "Others";
                     if (!sectionGroups[sec]) sectionGroups[sec] = [];
                     sectionGroups[sec].push(item);
                 });
@@ -1236,7 +1436,13 @@
                             row.dataset.id = item.id;
 
                             if (isSelectMode) {
-                                row.onclick = () => toggleItemSelection(item.id);
+                                row.onclick = (e) => {
+                                    if (didDragSelectMove) {
+                                        didDragSelectMove = false;
+                                        return;
+                                    }
+                                    toggleItemSelection(item.id, e);
+                                };
                                 row.ontouchstart = (e) => startDragSelection(e, item.id);
                                 row.onmousedown = (e) => startDragSelection(e, item.id);
                             } else {
@@ -1285,7 +1491,13 @@
                         row.dataset.id = item.id;
 
                         if (isSelectMode) {
-                            row.onclick = () => toggleItemSelection(item.id);
+                            row.onclick = (e) => {
+                                if (didDragSelectMove) {
+                                    didDragSelectMove = false;
+                                    return;
+                                }
+                                toggleItemSelection(item.id, e);
+                            };
                             row.ontouchstart = (e) => startDragSelection(e, item.id);
                             row.onmousedown = (e) => startDragSelection(e, item.id);
                         } else {
@@ -1302,44 +1514,6 @@
                     });
                 }
             }
-        }
-
-        function startDragSelection(e, initialId) {
-            if (!isSelectMode) return;
-            isDragSelecting = true;
-
-            const handleDragMove = (evt) => {
-                if (!isDragSelecting) return;
-                const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
-                const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
-
-                const targetEl = document.elementFromPoint(clientX, clientY);
-                if (!targetEl) return;
-                const rowEl = targetEl.closest('.item-row');
-                if (rowEl && rowEl.dataset.id) {
-                    const rowId = rowEl.dataset.id;
-                    if (!selectedItemIds.has(rowId)) {
-                        selectedItemIds.add(rowId);
-                        const titleEl = document.getElementById('mainTitle');
-                        titleEl.innerText = `${selectedItemIds.size} Selected`;
-                        renderList();
-                        updateSelectionBarState();
-                    }
-                }
-            };
-
-            const endDragSelection = () => {
-                isDragSelecting = false;
-                window.removeEventListener('mousemove', handleDragMove);
-                window.removeEventListener('touchmove', handleDragMove);
-                window.removeEventListener('mouseup', endDragSelection);
-                window.removeEventListener('touchend', endDragSelection);
-            };
-
-            window.addEventListener('mousemove', handleDragMove);
-            window.addEventListener('touchmove', handleDragMove, { passive: true });
-            window.addEventListener('mouseup', endDragSelection);
-            window.addEventListener('touchend', endDragSelection);
         }
 
         function toggleItem(id) {
