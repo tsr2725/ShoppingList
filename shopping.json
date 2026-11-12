@@ -87,7 +87,7 @@
     "id": "id-1794437683525-p7p3m",
     "name": "Paneer",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Dairy, Eggs and Cheese"
   },
   {
