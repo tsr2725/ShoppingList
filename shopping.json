@@ -192,7 +192,7 @@
     "id": "id-1794474581438-8e8s1",
     "name": "Butter block",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Dairy, Eggs and Cheese"
   },
   {
