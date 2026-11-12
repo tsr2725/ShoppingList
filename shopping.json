@@ -38,7 +38,7 @@
     "id": "id-1794437689276-r2077",
     "name": "Tissues",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Others"
   },
   {
