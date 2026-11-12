@@ -264,11 +264,11 @@
                     <span class="menu-item-arrow" id="sectionsArrow">›</span>
                 </div>
                 <div class="submenu-panel" id="sectionsSubmenu">
-                    <div class="menu-item" onclick="alert('New section creation ready!')">
-                        <span style="padding-left: 20px;">New Section</span>
+                    <div class="menu-item" onclick="alert('Select items and tap the section icon at the bottom to assign sections.')">
+                        <span style="padding-left: 20px;">Assign via Select Mode</span>
                     </div>
-                    <div class="menu-item" onclick="alert('Edit sections ready!')">
-                        <span style="padding-left: 20px;">Edit Sections</span>
+                    <div class="menu-item" onclick="resetLearnedCategories()">
+                        <span style="padding-left: 20px;">Reset Learned Rules</span>
                     </div>
                 </div>
 
@@ -390,7 +390,7 @@
             <h3>Add Product</h3>
             <div id="reader"></div>
             <p style="font-size: 14px; color: var(--text-muted); margin: 10px 0;">— OR ENTER MANUALLY —</p>
-            <input type="text" id="manualInput" class="modal-input" placeholder="Enter product name (e.g. Bread)" onkeydown="if(event.key==='Enter') submitManualItem()">
+            <input type="text" id="manualInput" class="modal-input" placeholder="Enter product name (e.g. Pineapple lumps)" onkeydown="if(event.key==='Enter') submitManualItem()">
             
             <div class="qty-picker-container">
                 <label class="qty-label">Quantity</label>
@@ -430,14 +430,17 @@
 
     <script>
         // -----------------------------------------------------------------
-        // PASTE YOUR GENERATED ENCRYPTED STRING BETWEEN THE QUOTES BELOW:
+        // 1. PASTE YOUR GENERATED ENCRYPTED STRING BETWEEN THE QUOTES BELOW:
         // -----------------------------------------------------------------
         const ENCRYPTED_KEYS = "U2FsdGVkX18gCBrbMYPHhrrHsy05U3tGFbETE9hFZ+d+O9ODlX1z/j495mx3AAOO1QzC/PPhrB6BRbpbvG+5ddnu1kxMYauvVIr+8Vvw927QL3Fuvl+wzI/CoIkfr5k/uq1IP13x0uitdd3GJN29mY6WOGzJxyA4Ag7ehCLwyZUgzlyB91f6htuVcfrEAIYB";
-        // -----------------------------------------------------------------
 
+        // -----------------------------------------------------------------
+        // 2. ENTER YOUR GITHUB USERNAME BELOW:
+        // -----------------------------------------------------------------
         const GITHUB_USERNAME = "tsr2725";
         const REPO_NAME = "ShoppingList";
         const FILE_PATH = "shopping.json";
+        const CATEGORIES_FILE_PATH = "categories.json";
         const POLL_INTERVAL = 1000;
 
         let PERSONAL_ACCESS_TOKEN = "";
@@ -450,35 +453,101 @@
             "Pet Care", "Sauces and Condiments", "Seafood", "Wine, Beer and Spirits", "Others"
         ];
 
-        const LOCAL_CATEGORY_MAP = {
-            "Snacks and Lollies": [
-                "dried mango", "lolly snakes", "snakes", "lolly", "lollies", "gummies", "gummy",
-                "jubes", "licorice", "liquorice", "marshmallow", "marshmallows", "toffee", "fudge",
-                "chips", "crisps", "snack", "candy", "chocolate", "popcorn", "nuts", "biscuit",
-                "biscuits", "cookie", "cookies", "pretzels", "crackers", "sweets", "muesli bar"
-            ],
-            "Bakery": [
-                "cake", "cakes", "cupcake", "cupcakes", "brownie", "brownies", "cheesecake",
-                "pastry", "pastries", "pie", "pies", "donut", "donuts", "doughnut", "doughnuts",
-                "scone", "scones", "tart", "bread", "bun", "buns", "croissant", "bagel", "muffin", "loaf", "rolls"
-            ],
-            "Dairy, Eggs and Cheese": ["milk", "cheese", "butter", "ghee", "yogurt", "yoghurt", "dahi", "cream", "egg", "eggs", "paneer", "curd"],
-            "Fruit and Veg": ["mango", "apple", "apples", "banana", "bananas", "cucumber", "tomato", "tomatoes", "onion", "onions", "potato", "potatoes", "kheera", "spinach", "lettuce", "berry", "berries", "grape", "grapes", "lemon", "lime", "orange", "garlic", "ginger", "avocado", "carrot", "broccoli"],
-            "Spices and Seasonings": ["haldi", "turmeric", "salt", "pepper", "spice", "spices", "chili", "chilli", "cumin", "coriander", "paprika", "seasoning", "masala", "cinnamon", "oregano", "basil"],
-            "Cleaning": ["soap", "detergent", "bleach", "sponge", "cleaner", "wipes", "dishwash", "paper towel", "trash bag", "rubbish bag"],
-            "Breads and Cereals": ["cereal", "oats", "granola", "cornflakes", "weet-bix", "weetbix", "porridge"],
-            "Beverages": ["juice", "soda", "water", "coke", "drink", "sparkling", "lemonade", "soft drink"],
-            "Coffee and Tea": ["coffee", "tea", "chai", "espresso", "matcha"],
-            "Meat": ["chicken", "beef", "pork", "lamb", "bacon", "steak", "sausage", "sausages", "meat", "mince"],
-            "Seafood": ["fish", "salmon", "shrimp", "prawns", "tuna", "crab"],
-            "Pasta, Rice and Beans": ["rice", "pasta", "spaghetti", "noodles", "beans", "lentils", "dal", "chickpeas"],
-            "Sauces and Condiments": ["ketchup", "tomato sauce", "mayo", "mayonnaise", "mustard", "sauce", "soy sauce", "vinegar", "chutney"],
-            "Household Items": ["foil", "ziploc", "napkins", "batteries", "lightbulb", "glad wrap", "baking paper", "toilet paper", "tissues"],
-            "Personal Care and Health": ["shampoo", "conditioner", "toothpaste", "toothbrush", "deodorant", "lotion", "vitamins", "panadol", "body wash"],
-            "Pet Care": ["cat food", "dog food", "pet treats", "litter"],
-            "Frozen Foods": ["ice cream", "frozen pizza", "frozen peas", "frozen veggies", "frozen berries"],
-            "Wine, Beer and Spirits": ["wine", "beer", "whiskey", "vodka", "cider", "alcohol", "gin"]
+        // Built-in offline backup dictionary (automatically upgraded when categories.json loads)
+        let categoryDatabase = {
+            exact: {
+                "pineapple lumps": "Snacks and Lollies",
+                "dried mango": "Snacks and Lollies",
+                "lolly snakes": "Snacks and Lollies",
+                "chocolate milk": "Dairy, Eggs and Cheese",
+                "coconut milk": "Canned Foods and Soups",
+                "peanut butter": "Sauces and Condiments",
+                "ice cream": "Frozen Foods"
+            },
+            keywords: {
+                "Snacks and Lollies": ["lollies", "lolly", "snakes", "pascall", "whittakers", "chocolate", "chips", "bluebird", "biscuits", "cookie time"],
+                "Bakery": ["cake", "cakes", "bread", "vogels", "freyas", "croissant", "muffin", "donut", "pie", "scone", "rolls", "wraps"],
+                "Dairy, Eggs and Cheese": ["milk", "anchor", "meadow fresh", "cheese", "mainland", "butter", "ghee", "yoghurt", "dahi", "cream", "egg", "eggs", "paneer"],
+                "Fruit and Veg": ["apple", "apples", "banana", "bananas", "kiwifruit", "feijoa", "avocado", "mango", "pineapple", "kumara", "potato", "onion", "tomato", "cucumber", "kheera", "broccoli", "carrot", "spinach"],
+                "Spices and Seasonings": ["haldi", "turmeric", "salt", "pepper", "cumin", "masala", "curry powder", "paprika", "cinnamon", "garlic"]
+            }
         };
+
+        // Precompiled sorted keyword rules for fast whole-word regex matching
+        let compiledKeywordRules = [];
+
+        function compileCategoryRules(db) {
+            categoryDatabase = db;
+            const rules = [];
+            if (db && db.keywords) {
+                for (const [section, words] of Object.entries(db.keywords)) {
+                    if (!Array.isArray(words)) continue;
+                    for (const word of words) {
+                        const clean = word.toLowerCase().trim();
+                        if (!clean) continue;
+                        const escaped = clean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        rules.push({
+                            keyword: clean,
+                            section: section,
+                            regex: new RegExp(`\\b${escaped}\\b`, 'i')
+                        });
+                    }
+                }
+            }
+            // Sort longest phrases first so multi-word matches always beat single-word matches
+            rules.sort((a, b) => b.keyword.length - a.keyword.length);
+            compiledKeywordRules = rules;
+        }
+
+        async function loadExternalCategories() {
+            // Load cached categories.json immediately for instant offline readiness
+            const cached = localStorage.getItem("cached_categories_v1");
+            if (cached) {
+                try {
+                    compileCategoryRules(JSON.parse(cached));
+                } catch (e) {}
+            } else {
+                compileCategoryRules(categoryDatabase);
+            }
+
+            // Fetch latest categories.json from the repository
+            try {
+                const res = await fetch(`${CATEGORIES_FILE_PATH}?t=${Date.now()}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && (data.exact || data.keywords)) {
+                        localStorage.setItem("cached_categories_v1", JSON.stringify(data));
+                        compileCategoryRules(data);
+                    }
+                }
+            } catch (err) {
+                console.log("Using cached/built-in category dictionary.");
+            }
+        }
+
+        /* --- Self-Learning User Memory --- */
+        function getLearnedCategories() {
+            try {
+                return JSON.parse(localStorage.getItem("learned_categories_v1") || "{}");
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function saveLearnedCategory(itemName, sectionName) {
+            if (!itemName || !sectionName || sectionName === "Others") return;
+            const learned = getLearnedCategories();
+            learned[itemName.toLowerCase().trim()] = sectionName;
+            localStorage.setItem("learned_categories_v1", JSON.stringify(learned));
+        }
+
+        function resetLearnedCategories() {
+            document.getElementById('popoverMenu').style.display = 'none';
+            if (confirm("Reset all custom learned item sections?")) {
+                localStorage.removeItem("learned_categories_v1");
+                showAiStatus("✓ Learned rules cleared");
+            }
+        }
 
         function showAiStatus(msg, isError = false) {
             const el = document.getElementById('aiStatus');
@@ -612,31 +681,38 @@
             };
         }
 
+        /* --- 4-Tier NZ Smart Categorization Engine --- */
         async function categorizeItemName(rawName) {
             const lower = rawName.toLowerCase().trim();
 
-            // 1. Priority override rules
-            if (lower.includes("dried mango")) {
-                showAiStatus("⚡ Local Match → Snacks and Lollies");
-                return "Snacks and Lollies";
+            // Tier 1: Self-Learning User Memory
+            const learned = getLearnedCategories();
+            if (learned[lower] && ALL_SECTIONS.includes(learned[lower])) {
+                showAiStatus(`🧠 Learned Match → ${learned[lower]}`);
+                return learned[lower];
             }
 
-            // 2. Local Dictionary Check
-            for (const [section, keywords] of Object.entries(LOCAL_CATEGORY_MAP)) {
-                for (const kw of keywords) {
-                    if (lower.includes(kw)) {
-                        showAiStatus(`⚡ Local Match → ${section}`);
-                        return section;
-                    }
+            // Tier 2: Exact Phrase Match from categories.json
+            if (categoryDatabase.exact && categoryDatabase.exact[lower]) {
+                const exactSec = categoryDatabase.exact[lower];
+                showAiStatus(`⚡ NZ Dictionary → ${exactSec}`);
+                return exactSec;
+            }
+
+            // Tier 3: Whole-Word Boundary Regex Match (longest phrase first)
+            for (const rule of compiledKeywordRules) {
+                if (rule.regex.test(lower)) {
+                    showAiStatus(`⚡ NZ Dictionary → ${rule.section}`);
+                    return rule.section;
                 }
             }
 
-            // 3. Gemini API Fallback (using current gemini-3.5-flash-lite endpoint)
+            // Tier 4: Live Gemini AI Fallback (New Zealand supermarket context)
             const geminiKey = localStorage.getItem("gemini_api_key");
             if (geminiKey) {
                 showAiStatus(`✨ Asking Gemini AI for "${rawName}"...`);
                 try {
-                    const promptText = `Categorize the grocery item "${rawName}" into exactly ONE of these categories: ${ALL_SECTIONS.join(", ")}. Reply with ONLY the exact category name and no punctuation.`;
+                    const promptText = `You are categorizing a New Zealand supermarket grocery item (sold at PAK'nSAVE, Woolworths NZ, or New World). Categorize "${rawName}" into exactly ONE of these categories: ${ALL_SECTIONS.join(", ")}. Reply with ONLY the exact category name and no punctuation.`;
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiKey}`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -655,10 +731,11 @@
                         );
 
                         if (matchedSection) {
+                            saveLearnedCategory(rawName, matchedSection);
                             showAiStatus(`✨ Gemini AI → ${matchedSection}`);
                             return matchedSection;
                         } else {
-                            showAiStatus(`⚠️ Gemini returned unrecognized: "${cleanedAnswer}" → Others`, true);
+                            showAiStatus(`⚠️ Gemini returned: "${cleanedAnswer}" → Others`, true);
                         }
                     } else {
                         const errMsg = data.error?.message || `HTTP ${res.status}`;
@@ -697,6 +774,7 @@
         window.onload = async function() {
             populateQtyDropdown();
             populateSectionPickerPopover();
+            await loadExternalCategories();
 
             if (!checkAccessKeys()) return;
 
@@ -883,11 +961,17 @@
 
         function moveSelectedToSection(sectionName) {
             document.getElementById('sectionPickerPopover').style.display = 'none';
+            let lastMovedName = "";
             currentItems.forEach(i => {
                 if (selectedItemIds.has(i.id)) {
                     i.section = sectionName;
+                    saveLearnedCategory(i.name, sectionName);
+                    lastMovedName = i.name;
                 }
             });
+            if (lastMovedName) {
+                showAiStatus(`🧠 Learned: "${lastMovedName}" → ${sectionName}`);
+            }
             renderList();
             scheduleSync(`Moved items to ${sectionName}`);
         }
