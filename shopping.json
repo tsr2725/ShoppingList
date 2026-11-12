@@ -17,7 +17,7 @@
     "id": "id-1794437664168-7vzej",
     "name": "Milk",
     "quantity": 1,
-    "completed": true,
+    "completed": false,
     "section": "Dairy, Eggs and Cheese"
   },
   {
