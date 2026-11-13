@@ -79,9 +79,10 @@
             --card-border: #e5e5ea;
             --text-color: #1c1c1e;
             --text-muted: #8e8e93;
-            --item-border: #f0f0f5;
+            --item-border: #e5e5ea;
             --circle-border: #c7c7cc;
             --accent-color: #bfa15f;
+            --pill-bg: #f2f2f7;
             --badge-bg: rgba(191, 161, 95, 0.15);
             --modal-bg: #ffffff;
             --input-bg: #ffffff;
@@ -94,7 +95,7 @@
             --menu-border: rgba(0, 0, 0, 0.08);
             --menu-shadow: 0 16px 38px rgba(0, 0, 0, 0.18);
             --menu-hover: rgba(0, 0, 0, 0.04);
-            --selected-row-bg: rgba(0, 0, 0, 0.06);
+            --selected-row-bg: rgba(0, 0, 0, 0.05);
             --bottom-bar-bg: rgba(250, 250, 250, 0.88);
             --bottom-bar-border: rgba(0, 0, 0, 0.12);
             --selection-blue: #007aff;
@@ -108,8 +109,9 @@
                 --text-color: #f2f2f7;
                 --text-muted: #8e8e93;
                 --item-border: #2c2c2e;
-                --circle-border: #48484a;
+                --circle-border: #5a5a5e;
                 --accent-color: #d4af37;
+                --pill-bg: #1c1c1e;
                 --badge-bg: rgba(212, 175, 55, 0.2);
                 --modal-bg: #1c1c1e;
                 --input-bg: #2c2c2e;
@@ -131,32 +133,42 @@
         html {
             background-color: var(--bg-color);
             height: 100%;
-            overscroll-behavior: none;
             overscroll-behavior-y: none;
         }
         body {
             background-color: var(--bg-color); color: var(--text-color); margin: 0;
-            padding: max(12px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(32px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+            padding: max(14px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(32px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
             display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box;
-            overscroll-behavior: none;
             overscroll-behavior-y: none;
         }
 
-        .container { width: 100%; max-width: 560px; padding-bottom: 90px; box-sizing: border-box; position: relative; }
-        .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; position: relative; z-index: 200; }
-        .header-title-box { display: flex; align-items: center; gap: 12px; }
-        .app-header-logo { height: 36px; width: auto; object-fit: contain; }
-        h1 { font-size: 34px; font-weight: 800; color: var(--accent-color); margin: 0; letter-spacing: -0.6px; }
+        .container { width: 100%; max-width: 560px; padding-bottom: 96px; box-sizing: border-box; position: relative; }
+        .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; position: relative; z-index: 200; }
+        .header-title-box { display: flex; align-items: center; gap: 10px; }
+        .app-header-logo { height: 34px; width: auto; object-fit: contain; }
+        h1 { font-size: 34px; font-weight: 700; color: var(--accent-color); margin: 0; letter-spacing: -0.7px; }
 
-        .header-pill { display: flex; align-items: center; background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 2px 6px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); }
-        .header-pill-btn { background: none; border: none; color: var(--accent-color); font-size: 16px; padding: 6px 10px; cursor: pointer; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
-        .finish-select-btn { width: 32px; height: 32px; border-radius: 50%; background-color: var(--selection-blue); color: white; border: none; font-size: 16px; font-weight: 700; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3); }
+        .header-pill {
+            display: flex; align-items: center; background: var(--pill-bg);
+            border: none; border-radius: 20px; padding: 2px 4px;
+        }
+        .header-pill-btn {
+            background: none; border: none; color: var(--accent-color); font-size: 16px;
+            font-weight: 700; letter-spacing: 1px; padding: 6px 11px; cursor: pointer;
+            border-radius: 16px; display: flex; align-items: center; justify-content: center;
+        }
+        .finish-select-btn {
+            width: 34px; height: 34px; border-radius: 50%; background-color: var(--selection-blue);
+            color: white; border: none; font-size: 16px; font-weight: 700; display: none;
+            align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+        }
 
         .popover-menu {
-            display: none; position: absolute; top: 44px; right: 0; width: 260px; max-height: 80vh; overflow-y: auto;
+            display: none; position: absolute; top: 44px; right: 0; width: 250px; max-height: 80vh; overflow-y: auto;
             background: var(--menu-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--menu-border); border-radius: 16px; box-shadow: var(--menu-shadow); padding: 6px 0; z-index: 999; animation: menuFadeIn 0.18s cubic-bezier(0.2, 0, 0, 1);
+            border: 1px solid var(--menu-border); border-radius: 14px; box-shadow: var(--menu-shadow); padding: 6px 0; z-index: 999; animation: menuFadeIn 0.18s cubic-bezier(0.2, 0, 0, 1);
         }
         @keyframes menuFadeIn { from { opacity: 0; transform: scale(0.92) translateY(-8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
@@ -168,41 +180,99 @@
         .menu-divider { height: 1px; background-color: var(--card-border); margin: 4px 0; }
         .submenu-panel { display: none; padding-left: 8px; background: rgba(0, 0, 0, 0.02); border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border); }
 
-        .list-container { width: 100%; margin-top: 14px; margin-bottom: 20px; }
-        .section-header { font-size: 20px; font-weight: 700; color: var(--text-color); margin: 22px 0 8px 4px; display: flex; justify-content: space-between; align-items: center; letter-spacing: -0.3px; }
+        .list-container { width: 100%; margin-top: 6px; margin-bottom: 16px; }
+        .section-header {
+            font-size: 19px; font-weight: 700; color: var(--text-color);
+            margin: 22px 0 0 0; padding: 0 2px 8px 2px;
+            border-bottom: 0.5px solid var(--item-border);
+            display: flex; justify-content: space-between; align-items: center; letter-spacing: -0.35px;
+        }
         .section-header:first-child { margin-top: 8px; }
 
         .item-row {
-            display: flex; align-items: center; padding: 14px 12px; border-bottom: 1px solid var(--item-border);
+            display: flex; align-items: center; padding: 11px 2px;
+            border-bottom: 0.5px solid var(--item-border);
             user-select: none; -webkit-user-select: none; touch-action: pan-y; background: transparent;
             transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease, opacity 0.2s ease;
-            position: relative; will-change: transform; border-radius: 12px; margin-bottom: 2px;
+            position: relative; will-change: transform;
         }
         body.select-mode .item-row {
-            touch-action: none;
             cursor: pointer;
+            padding-left: 0;
         }
-        .item-row.selected-item { background-color: var(--selected-row-bg) !important; }
-        .item-row.is-dragging { position: fixed; z-index: 1000; pointer-events: none; box-shadow: var(--drag-card-shadow); border-radius: 12px; padding: 14px 18px; background: var(--modal-bg); border: 1px solid var(--card-border); box-sizing: border-box; will-change: transform; transition: none !important; }
+        .item-row.selected-item {
+            background-color: var(--selected-row-bg) !important;
+            border-radius: 10px;
+            padding-left: 6px;
+            padding-right: 6px;
+        }
+        .item-row.is-dragging { position: fixed; z-index: 1000; pointer-events: none; box-shadow: var(--drag-card-shadow); border-radius: 12px; padding: 12px 16px; background: var(--modal-bg); border: 1px solid var(--card-border); box-sizing: border-box; will-change: transform; transition: none !important; }
         .item-row.drag-placeholder { opacity: 0 !important; pointer-events: none; }
 
-        .radio-circle { width: 22px; height: 22px; border: 2px solid var(--circle-border); background-color: transparent; border-radius: 50%; margin-right: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; transition: all 0.2s ease; }
-        .radio-circle.checked { border-color: var(--accent-color); background-color: var(--accent-color); }
-        .radio-circle.checked::after { content: ""; width: 5px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 2px; }
+        /* Apple Reminders Dotted Circle Styling */
+        .radio-circle {
+            width: 22px; height: 22px; border-radius: 50%; margin-right: 14px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            cursor: pointer; color: var(--circle-border); transition: all 0.2s ease;
+            position: relative;
+        }
+        .radio-circle svg.dotted-ring {
+            width: 22px; height: 22px; display: block;
+        }
+        .radio-circle.checked {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        .radio-circle.checked svg.dotted-ring {
+            display: none;
+        }
+        .radio-circle.checked::after {
+            content: ""; width: 5px; height: 9px; border: solid white;
+            border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 2px;
+        }
 
-        .select-marker { width: 22px; height: 22px; border: 2px solid var(--circle-border); background-color: transparent; border-radius: 50%; margin-right: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s ease; }
-        .select-marker.is-selected { border-color: var(--selection-blue); background-color: var(--selection-blue); }
-        .select-marker.is-selected::after { content: ""; width: 5px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 2px; }
+        /* Dedicated Left Touch-Drag Zone in Select Mode (allows normal scrolling on item text) */
+        .select-touch-zone {
+            display: flex; align-items: center; justify-content: center;
+            padding: 6px 14px 6px 2px; margin: -6px 0;
+            touch-action: none; flex-shrink: 0; cursor: pointer;
+        }
+        .select-marker {
+            width: 22px; height: 22px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            color: var(--circle-border); transition: all 0.15s ease;
+        }
+        .select-marker svg.dotted-ring {
+            width: 22px; height: 22px; display: block;
+        }
+        .select-marker.is-selected {
+            background-color: var(--selection-blue);
+        }
+        .select-marker.is-selected svg.dotted-ring {
+            display: none;
+        }
+        .select-marker.is-selected::after {
+            content: ""; width: 5px; height: 9px; border: solid white;
+            border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 2px;
+        }
 
-        .item-name { font-size: 17px; line-height: 1.4; font-weight: 400; color: var(--text-color); flex-grow: 1; word-break: break-word; cursor: pointer; padding-right: 8px; }
+        .item-name { font-size: 17px; line-height: 1.35; font-weight: 400; color: var(--text-color); flex-grow: 1; word-break: break-word; cursor: pointer; padding-right: 8px; letter-spacing: -0.2px; }
         .item-name.completed { text-decoration: line-through; color: var(--text-muted); }
-        .qty-badge { display: inline-block; vertical-align: middle; font-size: 13px; font-weight: 600; color: var(--accent-color); background-color: var(--badge-bg); padding: 2px 8px; border-radius: 10px; margin-left: 6px; letter-spacing: -0.2px; white-space: nowrap; cursor: pointer; }
+        .qty-badge { display: inline-block; vertical-align: middle; font-size: 13px; font-weight: 600; color: var(--accent-color); background-color: var(--badge-bg); padding: 1px 7px; border-radius: 10px; margin-left: 6px; letter-spacing: -0.2px; white-space: nowrap; cursor: pointer; }
         .item-name.completed .qty-badge { opacity: 0.5; background-color: rgba(142, 142, 147, 0.15); color: var(--text-muted); }
 
-        .action-btn { background: none; border: none; color: var(--circle-border); font-size: 20px; cursor: pointer; padding: 4px 6px; margin-left: 4px; border-radius: 4px; transition: color 0.2s ease; flex-shrink: 0; }
-        .action-btn.delete-btn:hover { color: var(--delete-hover); }
+        .action-btn { background: none; border: none; color: var(--circle-border); font-size: 19px; cursor: pointer; padding: 2px 6px; margin-left: 2px; border-radius: 4px; transition: color 0.2s ease, opacity 0.2s ease; flex-shrink: 0; opacity: 0.75; }
+        .action-btn.delete-btn:hover { color: var(--delete-hover); opacity: 1; }
 
-        .completed-section-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 4px 12px 4px; margin-top: 18px; border-top: 1px solid var(--item-border); font-size: 15px; font-weight: 600; color: var(--text-muted); cursor: pointer; user-select: none; transition: color 0.2s ease; }
+        .completed-section-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 2px; margin-top: 14px;
+            font-size: 15px; font-weight: 600; color: var(--text-muted);
+            cursor: pointer; user-select: none; transition: color 0.2s ease;
+        }
+        .completed-section-header .show-toggle-text {
+            font-weight: 500;
+        }
         .completed-section-header:hover { color: var(--accent-color); }
 
         .bottom-action-bar {
@@ -216,11 +286,17 @@
         .bottom-bar-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
         .section-picker-popover { display: none; position: fixed; bottom: calc(84px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: calc(100% - 60px); max-width: 320px; max-height: 60vh; overflow-y: auto; background: var(--menu-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--menu-border); border-radius: 16px; box-shadow: var(--menu-shadow); padding: 8px 0; z-index: 950; }
-        .status { text-align: center; margin-top: 12px; font-size: 14px; font-weight: 500; color: var(--text-muted); min-height: 20px; }
-        .ai-status { text-align: center; margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--accent-color); min-height: 18px; }
+        .status { text-align: center; margin-top: 12px; font-size: 13px; font-weight: 500; color: var(--text-muted); min-height: 18px; }
+        .ai-status { text-align: center; margin-top: 4px; font-size: 12px; font-weight: 600; color: var(--accent-color); min-height: 16px; }
         .empty-state { color: var(--text-muted); text-align: center; padding: 28px 0; font-style: italic; }
 
-        .fab { position: fixed; bottom: calc(30px + env(safe-area-inset-bottom)); right: calc(30px + env(safe-area-inset-right)); width: 60px; height: 60px; background-color: var(--accent-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 4px 16px rgba(191, 161, 95, 0.4); cursor: pointer; border: none; transition: transform 0.2s, opacity 0.2s; z-index: 99; }
+        .fab {
+            position: fixed; bottom: calc(28px + env(safe-area-inset-bottom)); right: calc(26px + env(safe-area-inset-right));
+            width: 56px; height: 56px; background-color: var(--accent-color); color: white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 30px; font-weight: 400; box-shadow: 0 4px 16px rgba(191, 161, 95, 0.38);
+            cursor: pointer; border: none; transition: transform 0.2s, opacity 0.2s; z-index: 99;
+        }
         .fab:active { transform: scale(0.95); }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; padding: 20px; box-sizing: border-box; }
@@ -330,7 +406,11 @@
         </button>
 
         <button class="bottom-bar-btn" id="btnUncompleteSelected" onclick="uncompleteSelectedItems()" title="Uncomplete Selected">
-            <div class="radio-circle" style="margin-right: 0;"></div>
+            <div class="radio-circle" style="margin-right: 0;">
+                <svg class="dotted-ring" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.4 2.8" stroke-linecap="round"/>
+                </svg>
+            </div>
         </button>
 
         <button class="bottom-bar-btn" id="btnMoveSection" onclick="toggleSectionPickerPopover(event)" title="Move Section">
@@ -437,6 +517,8 @@
 
         let PERSONAL_ACCESS_TOKEN = "";
 
+        const DOTTED_CIRCLE_SVG = `<svg class="dotted-ring" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.4 2.8" stroke-linecap="round"/></svg>`;
+
         const DEFAULT_SECTIONS = [
             "Dairy, Eggs and Cheese", "Fruit and Veg", "Spices and Seasonings", "Snacks and Lollies",
             "Cleaning", "Baby Care", "Bakery", "Baking Items", "Beverages", "Breads and Cereals",
@@ -444,6 +526,13 @@
             "Meat", "Oils and Dressings", "Pasta, Rice and Beans", "Personal Care and Health",
             "Pet Care", "Sauces and Condiments", "Seafood", "Wine, Beer and Spirits", "Others"
         ];
+
+        function isDesktopDevice() {
+            const hasFinePointer = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
+            const hasHover = window.matchMedia && window.matchMedia('(hover: hover)').matches;
+            const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            return hasFinePointer && hasHover && !isMobileUA;
+        }
 
         function loadSavedSections() {
             try {
@@ -630,10 +719,11 @@
         let html5QrCode = null;
         let currentItems = [];
         let currentSha = "";
-        let showCompleted = false; // Always keep completed items hidden unless Show is clicked
+        let showCompleted = false;
         let isSelectMode = false;
         let selectedItemIds = new Set();
         let lastSelectedItemId = null;
+        let lastSelectionAction = 'select';
 
         let syncTimer = null;
         let pollTimer = null;
@@ -662,6 +752,7 @@
         let dragSelectAction = 'select';
         let didDragSelectMove = false;
         let dragTouchedIds = new Set();
+        let autoScrollInterval = null;
 
         function formatItemName(str) {
             if (!str) return "";
@@ -964,11 +1055,12 @@
             }
         }
 
-        /* --- Select Mode (with Shift-Click & Touch Drag Selection) --- */
+        /* --- Select Mode (Shift-Click Select & Deselect + Mobile Circle-Column Drag Selection) --- */
         function toggleSelectMode() {
             isSelectMode = !isSelectMode;
             selectedItemIds.clear();
             lastSelectedItemId = null;
+            lastSelectionAction = 'select';
             document.getElementById('popoverMenu').style.display = 'none';
             document.getElementById('sectionPickerPopover').style.display = 'none';
 
@@ -1022,8 +1114,12 @@
         function toggleItemSelection(id, e = null) {
             if (!isSelectMode) return;
 
-            // Shift + Click range selection
+            // Shift + Click range selection AND deselection
             if (e && e.shiftKey && lastSelectedItemId) {
+                if (window.getSelection) {
+                    window.getSelection().removeAllRanges();
+                }
+
                 const visibleIds = Array.from(document.querySelectorAll('#listContainer .item-row'))
                     .map(el => el.dataset.id)
                     .filter(Boolean);
@@ -1035,7 +1131,11 @@
                     const minIdx = Math.min(startIdx, endIdx);
                     const maxIdx = Math.max(startIdx, endIdx);
                     for (let i = minIdx; i <= maxIdx; i++) {
-                        selectedItemIds.add(visibleIds[i]);
+                        if (lastSelectionAction === 'deselect') {
+                            selectedItemIds.delete(visibleIds[i]);
+                        } else {
+                            selectedItemIds.add(visibleIds[i]);
+                        }
                     }
                     lastSelectedItemId = id;
                     updateSelectionUI();
@@ -1045,8 +1145,10 @@
 
             if (selectedItemIds.has(id)) {
                 selectedItemIds.delete(id);
+                lastSelectionAction = 'deselect';
             } else {
                 selectedItemIds.add(id);
+                lastSelectionAction = 'select';
             }
             lastSelectedItemId = id;
             updateSelectionUI();
@@ -1054,18 +1156,16 @@
 
         function startDragSelection(e, initialId) {
             if (!isSelectMode) return;
-
-            // Let Shift+Click be handled cleanly by row.onclick
             if (e.shiftKey) return;
 
+            e.stopPropagation();
             isDragSelecting = true;
             didDragSelectMove = false;
             dragTouchedIds.clear();
             dragTouchedIds.add(initialId);
 
-            // Follow Apple Reminders behavior: if starting on an unselected item, drag selects;
-            // if starting on an already-selected item, drag deselects.
             dragSelectAction = selectedItemIds.has(initialId) ? 'deselect' : 'select';
+            let lastPointerY = e.touches ? e.touches[0].clientY : e.clientY;
 
             const applyDragActionToId = (targetId) => {
                 if (!targetId || dragTouchedIds.has(targetId)) return;
@@ -1073,7 +1173,6 @@
 
                 if (!didDragSelectMove) {
                     didDragSelectMove = true;
-                    // Apply action to the initial item as soon as dragging begins
                     if (dragSelectAction === 'select') {
                         selectedItemIds.add(initialId);
                     } else {
@@ -1087,7 +1186,19 @@
                     selectedItemIds.delete(targetId);
                 }
                 lastSelectedItemId = targetId;
+                lastSelectionAction = dragSelectAction;
                 updateSelectionUI();
+            };
+
+            const selectRowAtY = (clientY) => {
+                const rows = document.querySelectorAll('#listContainer .item-row');
+                for (const rowEl of rows) {
+                    const rect = rowEl.getBoundingClientRect();
+                    if (clientY >= rect.top && clientY <= rect.bottom && rowEl.dataset.id) {
+                        applyDragActionToId(rowEl.dataset.id);
+                        break;
+                    }
+                }
             };
 
             const handleDragMove = (evt) => {
@@ -1095,17 +1206,30 @@
                 if (evt.cancelable) evt.preventDefault();
 
                 const touch = evt.touches ? evt.touches[0] : evt;
-                const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
-                if (!targetEl) return;
-
-                const rowEl = targetEl.closest('.item-row');
-                if (rowEl && rowEl.dataset.id) {
-                    applyDragActionToId(rowEl.dataset.id);
-                }
+                lastPointerY = touch.clientY;
+                selectRowAtY(lastPointerY);
             };
+
+            // Gentle auto-scroll when dragging near top or bottom viewport edges
+            if (autoScrollInterval) clearInterval(autoScrollInterval);
+            autoScrollInterval = setInterval(() => {
+                if (!isDragSelecting) return;
+                const edgeZone = 85;
+                if (lastPointerY > window.innerHeight - edgeZone) {
+                    window.scrollBy(0, 8);
+                    selectRowAtY(lastPointerY);
+                } else if (lastPointerY < edgeZone) {
+                    window.scrollBy(0, -8);
+                    selectRowAtY(lastPointerY);
+                }
+            }, 25);
 
             const endDragSelection = () => {
                 isDragSelecting = false;
+                if (autoScrollInterval) {
+                    clearInterval(autoScrollInterval);
+                    autoScrollInterval = null;
+                }
                 window.removeEventListener('mousemove', handleDragMove);
                 window.removeEventListener('touchmove', handleDragMove);
                 window.removeEventListener('mouseup', endDragSelection);
@@ -1387,6 +1511,56 @@
             }
         }
 
+        function buildItemRow(item, isCompletedSection = false) {
+            const realIndex = currentItems.findIndex(i => i.id === item.id);
+            const qtyVal = item.quantity || 1;
+            const isCompleted = isCompletedSection || item.completed;
+            const isSelected = selectedItemIds.has(item.id);
+
+            const qtyHtml = isSelectMode 
+                ? `<span class="qty-badge">x${qtyVal}</span>` 
+                : `<span class="qty-badge" onclick="event.stopPropagation(); openEditModal('${item.id}', true)">x${qtyVal}</span>`;
+
+            const row = document.createElement('div');
+            row.className = `item-row ${isSelected ? 'selected-item' : ''}`;
+            row.dataset.index = realIndex;
+            row.dataset.id = item.id;
+
+            if (isSelectMode) {
+                row.onclick = (e) => {
+                    if (didDragSelectMove) {
+                        didDragSelectMove = false;
+                        return;
+                    }
+                    toggleItemSelection(item.id, e);
+                };
+
+                const touchZone = document.createElement('div');
+                touchZone.className = 'select-touch-zone';
+                touchZone.innerHTML = `<div class="select-marker ${isSelected ? 'is-selected' : ''}">${DOTTED_CIRCLE_SVG}</div>`;
+                touchZone.ontouchstart = (e) => startDragSelection(e, item.id);
+                touchZone.onmousedown = (e) => startDragSelection(e, item.id);
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = `item-name ${isCompleted ? 'completed' : ''}`;
+                nameDiv.innerHTML = `${escapeHtml(item.name)}${qtyHtml}`;
+
+                row.appendChild(touchZone);
+                row.appendChild(nameDiv);
+            } else {
+                row.addEventListener('mousedown', (e) => initItemDrag(e, realIndex));
+                row.addEventListener('touchstart', (e) => initItemDrag(e, realIndex), { passive: false });
+
+                row.innerHTML = `
+                    <div class="radio-circle ${isCompleted ? 'checked' : ''}" onclick="event.stopPropagation(); toggleItem('${item.id}')">${DOTTED_CIRCLE_SVG}</div>
+                    <div class="item-name ${isCompleted ? 'completed' : ''}" onclick="event.stopPropagation(); openEditModal('${item.id}', false)">${escapeHtml(item.name)}${qtyHtml}</div>
+                    <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('${item.id}')" title="Delete item">&times;</button>
+                `;
+            }
+
+            return row;
+        }
+
         function renderList() {
             const container = document.getElementById('listContainer');
             container.innerHTML = "";
@@ -1417,45 +1591,7 @@
                         container.appendChild(secHeader);
 
                         sectionGroups[sec].forEach(item => {
-                            const realIndex = currentItems.findIndex(i => i.id === item.id);
-                            const qtyVal = item.quantity || 1;
-                            const isCompleted = item.completed;
-                            const isSelected = selectedItemIds.has(item.id);
-
-                            const qtyHtml = isSelectMode 
-                                ? `<span class="qty-badge">x${qtyVal}</span>` 
-                                : `<span class="qty-badge" onclick="event.stopPropagation(); openEditModal('${item.id}', true)">x${qtyVal}</span>`;
-
-                            const circleMarker = isSelectMode
-                                ? `<div class="select-marker ${isSelected ? 'is-selected' : ''}"></div>`
-                                : `<div class="radio-circle ${isCompleted ? 'checked' : ''}" onclick="event.stopPropagation(); toggleItem('${item.id}')"></div>`;
-
-                            const row = document.createElement('div');
-                            row.className = `item-row ${isSelected ? 'selected-item' : ''}`;
-                            row.dataset.index = realIndex;
-                            row.dataset.id = item.id;
-
-                            if (isSelectMode) {
-                                row.onclick = (e) => {
-                                    if (didDragSelectMove) {
-                                        didDragSelectMove = false;
-                                        return;
-                                    }
-                                    toggleItemSelection(item.id, e);
-                                };
-                                row.ontouchstart = (e) => startDragSelection(e, item.id);
-                                row.onmousedown = (e) => startDragSelection(e, item.id);
-                            } else {
-                                row.addEventListener('mousedown', (e) => initItemDrag(e, realIndex));
-                                row.addEventListener('touchstart', (e) => initItemDrag(e, realIndex), { passive: false });
-                            }
-
-                            row.innerHTML = `
-                                ${circleMarker}
-                                <div class="item-name ${isCompleted ? 'completed' : ''}" ${!isSelectMode ? `onclick="event.stopPropagation(); openEditModal('${item.id}', false)"` : ''}>${escapeHtml(item.name)}${qtyHtml}</div>
-                                ${!isSelectMode ? `<button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('${item.id}')" title="Delete item">&times;</button>` : ''}
-                            `;
-                            container.appendChild(row);
+                            container.appendChild(buildItemRow(item, false));
                         });
                     }
                 });
@@ -1467,50 +1603,13 @@
                 header.onclick = () => { showCompleted = !showCompleted; renderList(); };
                 header.innerHTML = `
                     <span>Completed (${completedItems.length})</span>
-                    <span>${showCompleted ? '▲ Hide' : '▼ Show'}</span>
+                    <span class="show-toggle-text">${showCompleted ? 'Hide' : 'Show'}</span>
                 `;
                 container.appendChild(header);
 
                 if (showCompleted) {
                     completedItems.forEach((item) => {
-                        const realIndex = currentItems.findIndex(i => i.id === item.id);
-                        const qtyVal = item.quantity || 1;
-                        const isSelected = selectedItemIds.has(item.id);
-
-                        const qtyHtml = isSelectMode 
-                            ? `<span class="qty-badge">x${qtyVal}</span>` 
-                            : `<span class="qty-badge" onclick="event.stopPropagation(); openEditModal('${item.id}', true)">x${qtyVal}</span>`;
-
-                        const circleMarker = isSelectMode
-                            ? `<div class="select-marker ${isSelected ? 'is-selected' : ''}"></div>`
-                            : `<div class="radio-circle checked" onclick="event.stopPropagation(); toggleItem('${item.id}')"></div>`;
-
-                        const row = document.createElement('div');
-                        row.className = `item-row ${isSelected ? 'selected-item' : ''}`;
-                        row.dataset.index = realIndex;
-                        row.dataset.id = item.id;
-
-                        if (isSelectMode) {
-                            row.onclick = (e) => {
-                                if (didDragSelectMove) {
-                                    didDragSelectMove = false;
-                                    return;
-                                }
-                                toggleItemSelection(item.id, e);
-                            };
-                            row.ontouchstart = (e) => startDragSelection(e, item.id);
-                            row.onmousedown = (e) => startDragSelection(e, item.id);
-                        } else {
-                            row.addEventListener('mousedown', (e) => initItemDrag(e, realIndex));
-                            row.addEventListener('touchstart', (e) => initItemDrag(e, realIndex), { passive: false });
-                        }
-
-                        row.innerHTML = `
-                            ${circleMarker}
-                            <div class="item-name completed" ${!isSelectMode ? `onclick="event.stopPropagation(); openEditModal('${item.id}', false)"` : ''}>${escapeHtml(item.name)}${qtyHtml}</div>
-                            ${!isSelectMode ? `<button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteSingleItem('${item.id}')" title="Delete item">&times;</button>` : ''}
-                        `;
-                        container.appendChild(row);
+                        container.appendChild(buildItemRow(item, true));
                     });
                 }
             }
@@ -1778,6 +1877,14 @@
             document.getElementById('scanModal').style.display = 'flex';
             document.getElementById('manualInput').value = "";
             document.getElementById('addModalQty').value = "1";
+
+            // Auto-focus manual input only on desktop computers (not on mobile phones)
+            if (isDesktopDevice()) {
+                setTimeout(() => {
+                    const input = document.getElementById('manualInput');
+                    if (input) input.focus();
+                }, 80);
+            }
             
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start(
