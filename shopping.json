@@ -10,7 +10,7 @@
     "id": "id-1794437671225-f55j0",
     "name": "Cake",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Others"
   },
   {
@@ -52,21 +52,21 @@
     "id": "id-1794437904598-kyrg9",
     "name": "Guiness",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Others"
   },
   {
     "id": "id-1794437890936-imrl4",
     "name": "Jameson",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Others"
   },
   {
     "id": "id-1794437766884-m1vnw",
     "name": "Lolly snakes",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Others"
   },
   {
@@ -80,7 +80,7 @@
     "id": "id-1794437881815-pky3v",
     "name": "Moisturiser",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Others"
   },
   {
@@ -101,28 +101,28 @@
     "id": "id-1794437839601-9jxbn",
     "name": "Pretzlels",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Others"
   },
   {
     "id": "id-1794437855062-gquc0",
     "name": "Shapes",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Others"
   },
   {
     "id": "id-1794437759895-c23lx",
     "name": "Snakes",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Others"
   },
   {
     "id": "id-1794437689276-r2077",
     "name": "Tissues",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Others"
   },
   {
@@ -164,7 +164,7 @@
     "id": "id-1794437875414-lc4h3",
     "name": "Aveeno",
     "quantity": 1,
-    "completed": false,
+    "completed": true,
     "section": "Others"
   },
   {
