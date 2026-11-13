@@ -1,12 +1,5 @@
 [
   {
-    "id": "id-1794437875414-lc4h3",
-    "name": "Aveeno",
-    "quantity": 1,
-    "completed": true,
-    "section": "Others"
-  },
-  {
     "id": "id-1794437651610-fthq4",
     "name": "Bread",
     "quantity": 1,
@@ -166,6 +159,13 @@
     "quantity": 4,
     "completed": false,
     "section": "Personal Care and Health"
+  },
+  {
+    "id": "id-1794437875414-lc4h3",
+    "name": "Aveeno",
+    "quantity": 1,
+    "completed": true,
+    "section": "Others"
   },
   {
     "id": "id-1794474307221-k8o98",
