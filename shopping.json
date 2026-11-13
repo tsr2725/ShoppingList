@@ -28,6 +28,13 @@
     "section": "Snacks and Lollies"
   },
   {
+    "id": "id-1794474544081-zcp7t",
+    "name": "Pineapple lumps",
+    "quantity": 1,
+    "completed": false,
+    "section": "Snacks and Lollies"
+  },
+  {
     "id": "id-1794437753631-f34u2",
     "name": "Dried mango",
     "quantity": 1,
@@ -180,13 +187,6 @@
     "quantity": 1,
     "completed": false,
     "section": "Cleaning"
-  },
-  {
-    "id": "id-1794474544081-zcp7t",
-    "name": "Pineapple lumps",
-    "quantity": 1,
-    "completed": false,
-    "section": "Snacks and Lollies"
   },
   {
     "id": "id-1794474581438-8e8s1",
