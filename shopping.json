@@ -7,13 +7,6 @@
     "section": "Bakery"
   },
   {
-    "id": "id-1794437671225-f55j0",
-    "name": "Cake",
-    "quantity": 1,
-    "completed": true,
-    "section": "Others"
-  },
-  {
     "id": "id-1794437847831-6abgk",
     "name": "Chocolate",
     "quantity": 1,
@@ -49,39 +42,11 @@
     "section": "Dairy, Eggs and Cheese"
   },
   {
-    "id": "id-1794437904598-kyrg9",
-    "name": "Guiness",
-    "quantity": 1,
-    "completed": true,
-    "section": "Others"
-  },
-  {
-    "id": "id-1794437890936-imrl4",
-    "name": "Jameson",
-    "quantity": 1,
-    "completed": true,
-    "section": "Others"
-  },
-  {
-    "id": "id-1794437766884-m1vnw",
-    "name": "Lolly snakes",
-    "quantity": 1,
-    "completed": true,
-    "section": "Others"
-  },
-  {
     "id": "id-1794437664168-7vzej",
     "name": "Milk",
     "quantity": 1,
     "completed": false,
     "section": "Dairy, Eggs and Cheese"
-  },
-  {
-    "id": "id-1794437881815-pky3v",
-    "name": "Moisturiser",
-    "quantity": 1,
-    "completed": true,
-    "section": "Others"
   },
   {
     "id": "id-1794437683525-p7p3m",
@@ -96,34 +61,6 @@
     "quantity": 1,
     "completed": false,
     "section": "Fruit and Veg"
-  },
-  {
-    "id": "id-1794437839601-9jxbn",
-    "name": "Pretzlels",
-    "quantity": 1,
-    "completed": true,
-    "section": "Others"
-  },
-  {
-    "id": "id-1794437855062-gquc0",
-    "name": "Shapes",
-    "quantity": 1,
-    "completed": true,
-    "section": "Others"
-  },
-  {
-    "id": "id-1794437759895-c23lx",
-    "name": "Snakes",
-    "quantity": 1,
-    "completed": true,
-    "section": "Others"
-  },
-  {
-    "id": "id-1794437689276-r2077",
-    "name": "Tissues",
-    "quantity": 1,
-    "completed": true,
-    "section": "Others"
   },
   {
     "id": "id-1794437894836-d3fe4",
@@ -159,13 +96,6 @@
     "quantity": 4,
     "completed": false,
     "section": "Personal Care and Health"
-  },
-  {
-    "id": "id-1794437875414-lc4h3",
-    "name": "Aveeno",
-    "quantity": 1,
-    "completed": true,
-    "section": "Others"
   },
   {
     "id": "id-1794474307221-k8o98",
