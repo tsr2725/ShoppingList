@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "id": "id-1794690796891-j8jzv",
+    "name": "Milk",
+    "quantity": 1,
+    "completed": false,
+    "section": "Dairy, Eggs and Cheese"
+  }
+]
