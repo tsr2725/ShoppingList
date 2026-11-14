@@ -2,6 +2,14 @@
   {
     "id": "tpl-1794651786568-qth6",
     "name": "Normal List",
-    "items": []
+    "items": [
+      {
+        "id": "id-1794651797988-0oxk2",
+        "name": "Milk",
+        "quantity": 1,
+        "completed": false,
+        "section": "Dairy, Eggs and Cheese"
+      }
+    ]
   }
 ]
