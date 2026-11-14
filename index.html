@@ -68,8 +68,6 @@
     <style>
         :root {
             --bg-color: #ffffff;
-            --grad-solid: rgba(255, 255, 255, 0.98);
-            --grad-mid: rgba(255, 255, 255, 0.84);
             --grad-clear: rgba(255, 255, 255, 0);
             --card-bg: #ffffff;
             --card-border: #e5e5ea;
@@ -79,6 +77,7 @@
             --circle-border: #c7c7cc;
             --accent-color: #bfa15f;
             --pill-bg: #f2f2f7;
+            --pill-divider: rgba(0, 0, 0, 0.1);
             --badge-bg: rgba(191, 161, 95, 0.15);
             --modal-bg: #ffffff;
             --input-bg: #ffffff;
@@ -87,7 +86,7 @@
             --secondary-btn-text: #1c1c1e;
             --delete-hover: #ff3b30;
             --drag-card-shadow: 0 14px 32px rgba(0, 0, 0, 0.14);
-            --menu-bg: rgba(255, 255, 255, 0.92);
+            --menu-bg: rgba(255, 255, 255, 0.94);
             --menu-border: rgba(0, 0, 0, 0.08);
             --menu-shadow: 0 16px 38px rgba(0, 0, 0, 0.18);
             --menu-hover: rgba(0, 0, 0, 0.04);
@@ -100,8 +99,6 @@
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-color: #000000;
-                --grad-solid: rgba(0, 0, 0, 0.98);
-                --grad-mid: rgba(0, 0, 0, 0.84);
                 --grad-clear: rgba(0, 0, 0, 0);
                 --card-bg: #000000;
                 --card-border: #2c2c2e;
@@ -111,6 +108,7 @@
                 --circle-border: #5a5a5e;
                 --accent-color: #d4af37;
                 --pill-bg: #1c1c1e;
+                --pill-divider: rgba(255, 255, 255, 0.14);
                 --badge-bg: rgba(212, 175, 55, 0.2);
                 --modal-bg: #1c1c1e;
                 --input-bg: #2c2c2e;
@@ -118,7 +116,7 @@
                 --secondary-btn-bg: #2c2c2e;
                 --secondary-btn-text: #f2f2f7;
                 --drag-card-shadow: 0 14px 32px rgba(0, 0, 0, 0.55);
-                --menu-bg: rgba(30, 30, 32, 0.92);
+                --menu-bg: rgba(30, 30, 32, 0.94);
                 --menu-border: rgba(255, 255, 255, 0.12);
                 --menu-shadow: 0 16px 38px rgba(0, 0, 0, 0.6);
                 --menu-hover: rgba(255, 255, 255, 0.06);
@@ -144,7 +142,7 @@
 
         .container { width: 100%; max-width: 560px; padding-bottom: 96px; box-sizing: border-box; position: relative; }
 
-        /* Sticky Top Bar with Transparent-to-Solid Gradient on Scroll */
+        /* Sticky Top Bar: Solid from top through bottom of text, gradient only below text */
         .nav-header {
             position: sticky;
             top: 0;
@@ -152,43 +150,129 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
             padding-top: max(14px, env(safe-area-inset-top));
-            padding-bottom: 16px;
-            margin-bottom: 2px;
+            padding-bottom: 18px;
+            margin-bottom: 0;
             background: transparent;
-            transition: background 0.25s ease;
         }
         .nav-header.scrolled {
             background: linear-gradient(
                 to bottom,
-                var(--grad-solid) 0%,
-                var(--grad-mid) 62%,
+                var(--bg-color) 0%,
+                var(--bg-color) calc(100% - 18px),
                 var(--grad-clear) 100%
             );
         }
 
-        .header-title-box { display: flex; align-items: center; gap: 10px; }
-        .app-header-logo { height: 34px; width: auto; object-fit: contain; background: transparent; }
-        h1 { font-size: 34px; font-weight: 700; color: var(--accent-color); margin: 0; letter-spacing: -0.7px; }
+        .header-title-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            flex: 1;
+        }
+        .app-header-logo { height: 34px; width: auto; object-fit: contain; background: transparent; flex-shrink: 0; }
+        .title-switcher-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            cursor: pointer;
+            text-align: left;
+            min-width: 0;
+            max-width: 100%;
+        }
+        h1 {
+            font-size: 31px;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin: 0;
+            letter-spacing: -0.7px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .title-chevron {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent-color);
+            opacity: 0.78;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+        body.select-mode .title-chevron {
+            display: none;
+        }
 
         .header-pill {
             display: flex; align-items: center; background: var(--pill-bg);
-            border: none; border-radius: 20px; padding: 2px 4px;
+            border: none; border-radius: 20px; padding: 2px 4px; flex-shrink: 0;
         }
         .header-pill-btn {
             background: none; border: none; color: var(--accent-color); font-size: 16px;
-            font-weight: 700; letter-spacing: 1px; padding: 6px 11px; cursor: pointer;
+            font-weight: 700; letter-spacing: 1px; padding: 6px 10px; cursor: pointer;
             border-radius: 16px; display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.15s ease, transform 0.12s ease;
         }
+        .header-pill-btn:active:not(:disabled) {
+            transform: scale(0.92);
+        }
+        .header-pill-btn:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+        .pill-divider {
+            width: 1px;
+            height: 16px;
+            background-color: var(--pill-divider);
+        }
+
         .finish-select-btn {
             width: 34px; height: 34px; border-radius: 50%; background-color: var(--selection-blue);
             color: white; border: none; font-size: 16px; font-weight: 700; display: none;
-            align-items: center; justify-content: center; cursor: pointer;
+            align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
             box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
         }
 
+        /* List / Template Switcher Dropdown */
+        .list-switcher-popover {
+            display: none;
+            position: absolute;
+            top: calc(max(14px, env(safe-area-inset-top)) + 42px);
+            left: 0;
+            width: 265px;
+            max-height: 75vh;
+            overflow-y: auto;
+            background: var(--menu-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--menu-border);
+            border-radius: 14px;
+            box-shadow: var(--menu-shadow);
+            padding: 6px 0;
+            z-index: 999;
+            animation: menuFadeIn 0.18s cubic-bezier(0.2, 0, 0, 1);
+        }
+        .switcher-section-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 8px 16px 4px 16px;
+        }
+        .switcher-count {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
         .popover-menu {
-            display: none; position: absolute; top: calc(max(14px, env(safe-area-inset-top)) + 42px); right: 0; width: 250px; max-height: 80vh; overflow-y: auto;
+            display: none; position: absolute; top: calc(max(14px, env(safe-area-inset-top)) + 42px); right: 0; width: 255px; max-height: 80vh; overflow-y: auto;
             background: var(--menu-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--menu-border); border-radius: 14px; box-shadow: var(--menu-shadow); padding: 6px 0; z-index: 999; animation: menuFadeIn 0.18s cubic-bezier(0.2, 0, 0, 1);
         }
@@ -198,22 +282,58 @@
         .menu-item:hover { background: var(--menu-hover); }
         .menu-item.danger { color: var(--delete-hover); }
         .menu-item.danger .menu-item-icon { color: var(--delete-hover); }
-        .menu-item-left { display: flex; align-items: center; gap: 12px; }
-        .menu-item-icon { font-size: 16px; width: 20px; text-align: center; color: var(--text-color); }
+        .menu-item-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .menu-item-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .menu-item-icon { font-size: 16px; width: 20px; text-align: center; color: var(--text-color); flex-shrink: 0; }
         .menu-item-arrow { color: var(--text-muted); font-size: 13px; }
         .menu-divider { height: 1px; background-color: var(--card-border); margin: 4px 0; }
         .submenu-panel { display: none; padding-left: 8px; background: rgba(0, 0, 0, 0.02); border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border); }
 
-        .list-container { width: 100%; margin-top: 2px; margin-bottom: 16px; }
+        /* Template Mode Banner */
+        .template-banner {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: var(--badge-bg);
+            border: 1px solid rgba(191, 161, 95, 0.35);
+            border-radius: 12px;
+            padding: 9px 12px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: var(--text-color);
+        }
+        .template-banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .template-pill-btn {
+            background: var(--accent-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .template-pill-btn.secondary {
+            background: var(--secondary-btn-bg);
+            color: var(--secondary-btn-text);
+        }
+
+        .list-container { width: 100%; margin-top: 0; margin-bottom: 16px; }
         .section-header {
             font-size: 19px; font-weight: 700; color: var(--text-color);
-            margin: 20px 0 4px 0; padding: 0 2px 8px 2px;
+            margin: 18px 0 4px 0; padding: 0 2px 8px 2px;
             border-bottom: 0.5px solid var(--item-border);
             display: flex; justify-content: space-between; align-items: center; letter-spacing: -0.35px;
             transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
             will-change: transform;
         }
-        .section-header:first-child { margin-top: 4px; }
+        .section-header:first-child { margin-top: 2px; }
 
         /* Borderless Item Rows (Apple Reminders Style) */
         .item-row {
@@ -260,9 +380,10 @@
             border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 2px;
         }
 
-        /* Empty Dotted Circle Row at End of Each Section */
+        /* Empty Dotted Circle Row at End of Each Section (Blank until clicked) */
         .quick-add-row {
             display: flex; align-items: center; padding: 8px 2px 10px 2px;
+            min-height: 36px; cursor: text;
             transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
             will-change: transform;
         }
@@ -277,11 +398,7 @@
         .quick-add-input {
             flex-grow: 1; border: none; outline: none; background: transparent;
             color: var(--text-color); font-size: 16px; font-family: inherit;
-            padding: 2px 0; line-height: 1.35;
-        }
-        .quick-add-input::placeholder {
-            color: var(--text-muted);
-            opacity: 0.45;
+            padding: 2px 0; line-height: 1.35; cursor: text;
         }
 
         /* Dedicated Left Touch-Drag Zone in Select Mode */
@@ -339,7 +456,7 @@
         .section-picker-popover { display: none; position: fixed; bottom: calc(84px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: calc(100% - 60px); max-width: 320px; max-height: 60vh; overflow-y: auto; background: var(--menu-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--menu-border); border-radius: 16px; box-shadow: var(--menu-shadow); padding: 8px 0; z-index: 950; }
         .status { text-align: center; margin-top: 12px; font-size: 13px; font-weight: 500; color: var(--text-muted); min-height: 18px; }
         .ai-status { text-align: center; margin-top: 4px; font-size: 12px; font-weight: 600; color: var(--accent-color); min-height: 16px; }
-        .empty-state { color: var(--text-muted); text-align: center; padding: 28px 0; font-style: italic; }
+        .empty-state { color: var(--text-muted); text-align: center; padding: 24px 0 14px 0; font-style: italic; }
 
         .fab {
             position: fixed; bottom: calc(28px + env(safe-area-inset-bottom)); right: calc(26px + env(safe-area-inset-right));
@@ -364,12 +481,14 @@
         .modal-btn { background-color: var(--accent-color); color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 8px; }
         .modal-btn.secondary { background-color: var(--secondary-btn-bg); color: var(--secondary-btn-text); margin-top: 10px; }
 
-        /* Edit Sections Modal List */
+        /* Edit Sections & Templates Modal Lists */
         .sections-editor-list { overflow-y: auto; flex-grow: 1; margin: 8px 0 12px 0; border-top: 1px solid var(--item-border); border-bottom: 1px solid var(--item-border); text-align: left; }
         .section-edit-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 6px; border-bottom: 1px solid var(--item-border); gap: 8px; }
-        .section-edit-name { flex-grow: 1; font-size: 15px; font-weight: 500; color: var(--text-color); cursor: pointer; }
+        .section-edit-name { flex-grow: 1; font-size: 15px; font-weight: 500; color: var(--text-color); cursor: pointer; min-width: 0; }
+        .section-edit-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
         .section-edit-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-        .sec-mini-btn { background: var(--secondary-btn-bg); color: var(--text-color); border: none; border-radius: 6px; width: 28px; height: 28px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .sec-mini-btn { background: var(--secondary-btn-bg); color: var(--text-color); border: none; border-radius: 6px; height: 28px; min-width: 28px; padding: 0 7px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .sec-mini-btn.accent { background: var(--accent-color); color: #ffffff; }
         .sec-mini-btn.danger { color: var(--delete-hover); }
         .add-section-row { display: flex; gap: 8px; margin-bottom: 6px; }
         .add-section-row input { margin: 0; padding: 10px 12px; font-size: 15px; }
@@ -389,7 +508,8 @@
                 margin: 0 !important;
                 min-height: auto !important;
             }
-            .nav-header, .popover-menu, .bottom-action-bar, .section-picker-popover,
+            .nav-header, .popover-menu, .list-switcher-popover, .template-banner,
+            .bottom-action-bar, .section-picker-popover,
             .fab, .modal, .action-btn, .quick-add-row, .completed-section-header,
             .status, .ai-status {
                 display: none !important;
@@ -461,14 +581,27 @@
         <div class="nav-header" id="navHeader">
             <div class="header-title-box">
                 <img src="logo.png" alt="Logo" class="app-header-logo" onerror="this.style.display='none'">
-                <h1 id="mainTitle">Groceries</h1>
+                <button type="button" class="title-switcher-btn" id="titleSwitcherBtn" onclick="toggleListSwitcher(event)">
+                    <h1 id="mainTitle">Current List</h1>
+                    <span class="title-chevron" id="titleChevron">⌄</span>
+                </button>
             </div>
 
             <div class="header-pill" id="headerPill">
-                <button class="header-pill-btn" onclick="togglePopoverMenu(event)">•••</button>
+                <button class="header-pill-btn" id="undoBtn" onclick="performUndo()" title="Undo" disabled>
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 14 4 9l5-5"/>
+                        <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/>
+                    </svg>
+                </button>
+                <div class="pill-divider"></div>
+                <button class="header-pill-btn" onclick="togglePopoverMenu(event)" title="More">•••</button>
             </div>
 
             <button class="finish-select-btn" id="finishSelectBtn" onclick="toggleSelectMode()">✓</button>
+
+            <!-- List & Template Switcher Popover -->
+            <div class="list-switcher-popover" id="listSwitcherPopover"></div>
 
             <!-- Apple Reminders Popover Menu -->
             <div class="popover-menu" id="popoverMenu">
@@ -476,6 +609,13 @@
                     <div class="menu-item-left">
                         <span class="menu-item-icon">✓</span>
                         <span>Select Items</span>
+                    </div>
+                </div>
+
+                <div class="menu-item" onclick="openTemplatesModal()">
+                    <div class="menu-item-left">
+                        <span class="menu-item-icon">⧉</span>
+                        <span>Templates</span>
                     </div>
                 </div>
 
@@ -525,6 +665,15 @@
                 </div>
             </div>
         </div>
+
+        <!-- Template Mode Banner (shown when editing a saved template) -->
+        <div class="template-banner" id="templateBanner">
+            <span>Editing Template</span>
+            <div class="template-banner-actions">
+                <button type="button" class="template-pill-btn" onclick="applyActiveTemplateToCurrentList()">+ Add to Current List</button>
+                <button type="button" class="template-pill-btn secondary" onclick="switchToList('current')">Back</button>
+            </div>
+        </div>
         
         <div class="list-container" id="listContainer">
             <div class="empty-state" id="loadingText">Loading groceries list...</div>
@@ -561,6 +710,19 @@
     <div class="section-picker-popover" id="sectionPickerPopover"></div>
 
     <button class="fab" id="fabBtn" onclick="openModal()">+</button>
+
+    <!-- Templates Manager Modal -->
+    <div class="modal" id="templatesModal">
+        <div class="modal-content">
+            <h3>Templates</h3>
+            <div class="add-section-row">
+                <input type="text" id="newTemplateNameInput" class="modal-input" placeholder="New template name..." onkeydown="if(event.key==='Enter') createNewTemplate()">
+                <button class="modal-btn" onclick="createNewTemplate()">Create</button>
+            </div>
+            <div class="sections-editor-list" id="templatesEditorList"></div>
+            <button class="modal-btn secondary" onclick="closeTemplatesModal()">Done</button>
+        </div>
+    </div>
 
     <!-- Edit Sections Modal -->
     <div class="modal" id="editSectionsModal">
@@ -643,6 +805,7 @@
         const GITHUB_USERNAME = "tsr2725";
         const REPO_NAME = "ShoppingList";
         const FILE_PATH = "shopping.json";
+        const TEMPLATES_FILE_PATH = "templates.json";
         const CATEGORIES_FILE_PATH = "categories.json";
         const POLL_INTERVAL = 1000;
 
@@ -847,9 +1010,24 @@
         }
 
         const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${FILE_PATH}`;
+        const templatesApiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${TEMPLATES_FILE_PATH}`;
+
         let html5QrCode = null;
         let currentItems = [];
         let currentSha = "";
+
+        // Templates & Active List State
+        let activeListId = "current"; // "current" or template ID (e.g. "tpl-...")
+        let savedTemplates = loadTemplatesFromLocal();
+        let templatesSha = "";
+        let templateSyncTimer = null;
+        let isTemplateSyncing = false;
+        let templateSyncPending = false;
+
+        // Undo History Stack
+        const undoStack = [];
+        const MAX_UNDO_STEPS = 40;
+
         let showCompleted = false;
         let isSelectMode = false;
         let selectedItemIds = new Set();
@@ -886,6 +1064,135 @@
         let didDragSelectMove = false;
         let dragTouchedIds = new Set();
         let autoScrollInterval = null;
+
+        /* --- Active List & Templates Helpers --- */
+        function loadTemplatesFromLocal() {
+            try {
+                const raw = JSON.parse(localStorage.getItem("saved_templates_v1"));
+                if (Array.isArray(raw)) return raw;
+            } catch (e) {}
+            return [];
+        }
+
+        function saveCurrentListToLocal() {
+            try {
+                localStorage.setItem("saved_current_list_v1", JSON.stringify(currentItems));
+            } catch (e) {}
+        }
+
+        function saveTemplatesToLocal() {
+            try {
+                localStorage.setItem("saved_templates_v1", JSON.stringify(savedTemplates));
+            } catch (e) {}
+        }
+
+        function getActiveTemplate() {
+            if (activeListId === "current") return null;
+            return savedTemplates.find(t => t.id === activeListId) || null;
+        }
+
+        function getActiveItems() {
+            if (activeListId === "current") return currentItems;
+            const tpl = getActiveTemplate();
+            return tpl ? tpl.items : currentItems;
+        }
+
+        function setActiveItems(newItems) {
+            if (activeListId === "current") {
+                currentItems = newItems;
+                saveCurrentListToLocal();
+            } else {
+                const tpl = getActiveTemplate();
+                if (tpl) {
+                    tpl.items = newItems;
+                    saveTemplatesToLocal();
+                }
+            }
+        }
+
+        function getActiveListDisplayName() {
+            if (activeListId === "current") return "Current List";
+            const tpl = getActiveTemplate();
+            return tpl ? tpl.name : "Current List";
+        }
+
+        function persistActiveList(commitMessage = "Update list") {
+            if (activeListId === "current") {
+                saveCurrentListToLocal();
+                scheduleSync(commitMessage);
+            } else {
+                saveTemplatesToLocal();
+                scheduleTemplateSync(commitMessage);
+            }
+        }
+
+        /* --- Undo Stack Management --- */
+        function updateUndoButtonState() {
+            const btn = document.getElementById('undoBtn');
+            if (!btn) return;
+            btn.disabled = undoStack.length === 0;
+        }
+
+        function pushUndoSnapshot() {
+            const snapshot = {
+                listId: activeListId,
+                items: JSON.parse(JSON.stringify(getActiveItems()))
+            };
+            undoStack.push(snapshot);
+            if (undoStack.length > MAX_UNDO_STEPS) {
+                undoStack.shift();
+            }
+            updateUndoButtonState();
+        }
+
+        function performUndo() {
+            if (undoStack.length === 0) return;
+            const snapshot = undoStack.pop();
+            updateUndoButtonState();
+
+            if (snapshot.listId !== activeListId) {
+                if (snapshot.listId === "current" || savedTemplates.some(t => t.id === snapshot.listId)) {
+                    activeListId = snapshot.listId;
+                    updateHeaderTitleUI();
+                }
+            }
+
+            pendingMoveIds.clear();
+            if (batchMoveTimer) {
+                clearTimeout(batchMoveTimer);
+                batchMoveTimer = null;
+            }
+
+            setActiveItems(snapshot.items);
+
+            if (isSelectMode) {
+                const validIds = new Set(snapshot.items.map(i => i.id));
+                for (const id of Array.from(selectedItemIds)) {
+                    if (!validIds.has(id)) selectedItemIds.delete(id);
+                }
+                updateSelectionUI();
+            }
+
+            renderList();
+            persistActiveList("Undo last change");
+
+            const statusDiv = document.getElementById('status');
+            if (statusDiv) {
+                statusDiv.innerText = "↶ Undone";
+                setTimeout(() => {
+                    if (statusDiv.innerText === "↶ Undone") statusDiv.innerText = "";
+                }, 1800);
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === 'z') {
+                const tag = document.activeElement ? document.activeElement.tagName : '';
+                if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+                e.preventDefault();
+                performUndo();
+            }
+        });
 
         function formatItemName(str) {
             if (!str) return "";
@@ -1019,16 +1326,30 @@
             populateSectionPickerPopover();
             await loadExternalCategories();
             updateHeaderScrollState();
+            updateHeaderTitleUI();
+
+            // Load instant local backup of Current List if available
+            try {
+                const cachedCurrent = JSON.parse(localStorage.getItem("saved_current_list_v1"));
+                if (Array.isArray(cachedCurrent) && cachedCurrent.length > 0) {
+                    currentItems = cachedCurrent;
+                    renderList();
+                }
+            } catch (e) {}
 
             if (!checkAccessKeys()) return;
 
             const urlParams = new URLSearchParams(window.location.search);
             const rawItem = urlParams.get('item');
             
-            await fetchListFromGitHub();
+            await Promise.all([
+                fetchListFromGitHub(),
+                fetchTemplatesFromGitHub()
+            ]);
 
             if (rawItem) {
                 window.history.replaceState({}, document.title, window.location.pathname);
+                if (activeListId !== "current") switchToList("current");
                 await addItem(rawItem);
             }
 
@@ -1037,14 +1358,325 @@
             document.addEventListener('click', (e) => {
                 const menu = document.getElementById('popoverMenu');
                 const secPopover = document.getElementById('sectionPickerPopover');
+                const switcherPopover = document.getElementById('listSwitcherPopover');
                 if (!e.target.closest('#headerPill') && !e.target.closest('#popoverMenu') && !e.target.closest('.bottom-bar-btn')) {
                     menu.style.display = 'none';
                 }
                 if (!e.target.closest('#btnMoveSection') && !e.target.closest('#sectionPickerPopover')) {
                     secPopover.style.display = 'none';
                 }
+                if (!e.target.closest('#titleSwitcherBtn') && !e.target.closest('#listSwitcherPopover')) {
+                    switcherPopover.style.display = 'none';
+                }
             });
         };
+
+        /* --- List & Template Switcher and Template Maker --- */
+        function updateHeaderTitleUI() {
+            const titleEl = document.getElementById('mainTitle');
+            const banner = document.getElementById('templateBanner');
+            if (!isSelectMode) {
+                titleEl.innerText = getActiveListDisplayName();
+            }
+            if (banner) {
+                banner.style.display = (activeListId !== "current" && !isSelectMode) ? "flex" : "none";
+            }
+        }
+
+        function toggleListSwitcher(e) {
+            e.stopPropagation();
+            if (isSelectMode) return;
+            const popover = document.getElementById('listSwitcherPopover');
+            document.getElementById('popoverMenu').style.display = 'none';
+
+            if (popover.style.display === 'block') {
+                popover.style.display = 'none';
+                return;
+            }
+
+            renderListSwitcherPopover();
+            popover.style.display = 'block';
+        }
+
+        function renderListSwitcherPopover() {
+            const popover = document.getElementById('listSwitcherPopover');
+            popover.innerHTML = '';
+
+            const activeCurrentCount = currentItems.filter(i => !i.completed).length;
+            const currentRow = document.createElement('div');
+            currentRow.className = 'menu-item';
+            currentRow.onclick = () => {
+                popover.style.display = 'none';
+                switchToList('current');
+            };
+            currentRow.innerHTML = `
+                <div class="menu-item-left">
+                    <span class="menu-item-icon">${activeListId === 'current' ? '✓' : ''}</span>
+                    <span class="menu-item-text">Current List</span>
+                </div>
+                <span class="switcher-count">${activeCurrentCount}</span>
+            `;
+            popover.appendChild(currentRow);
+
+            const div1 = document.createElement('div');
+            div1.className = 'menu-divider';
+            popover.appendChild(div1);
+
+            const label = document.createElement('div');
+            label.className = 'switcher-section-label';
+            label.innerText = 'Saved Templates';
+            popover.appendChild(label);
+
+            if (savedTemplates.length === 0) {
+                const emptyNote = document.createElement('div');
+                emptyNote.style.cssText = 'padding: 8px 16px; font-size: 13px; color: var(--text-muted); font-style: italic;';
+                emptyNote.innerText = 'No templates yet';
+                popover.appendChild(emptyNote);
+            } else {
+                savedTemplates.forEach(tpl => {
+                    const row = document.createElement('div');
+                    row.className = 'menu-item';
+                    row.onclick = () => {
+                        popover.style.display = 'none';
+                        switchToList(tpl.id);
+                    };
+                    row.innerHTML = `
+                        <div class="menu-item-left">
+                            <span class="menu-item-icon">${activeListId === tpl.id ? '✓' : ''}</span>
+                            <span class="menu-item-text">${escapeHtml(tpl.name)}</span>
+                        </div>
+                        <span class="switcher-count">${tpl.items.length}</span>
+                    `;
+                    popover.appendChild(row);
+                });
+            }
+
+            const div2 = document.createElement('div');
+            div2.className = 'menu-divider';
+            popover.appendChild(div2);
+
+            const newTplBtn = document.createElement('div');
+            newTplBtn.className = 'menu-item';
+            newTplBtn.style.color = 'var(--accent-color)';
+            newTplBtn.onclick = () => {
+                popover.style.display = 'none';
+                openTemplatesModal(true);
+            };
+            newTplBtn.innerHTML = `
+                <div class="menu-item-left">
+                    <span class="menu-item-icon" style="color: var(--accent-color);">+</span>
+                    <span>New Template</span>
+                </div>
+            `;
+            popover.appendChild(newTplBtn);
+
+            const manageTplBtn = document.createElement('div');
+            manageTplBtn.className = 'menu-item';
+            manageTplBtn.onclick = () => {
+                popover.style.display = 'none';
+                openTemplatesModal(false);
+            };
+            manageTplBtn.innerHTML = `
+                <div class="menu-item-left">
+                    <span class="menu-item-icon">⧉</span>
+                    <span>Manage Templates</span>
+                </div>
+            `;
+            popover.appendChild(manageTplBtn);
+        }
+
+        function switchToList(targetId) {
+            if (targetId !== "current" && !savedTemplates.some(t => t.id === targetId)) {
+                targetId = "current";
+            }
+            activeListId = targetId;
+            pendingMoveIds.clear();
+            selectedItemIds.clear();
+            lastSelectedItemId = null;
+            showCompleted = false;
+            updateHeaderTitleUI();
+            renderList();
+        }
+
+        function openTemplatesModal(focusInput = false) {
+            document.getElementById('popoverMenu').style.display = 'none';
+            document.getElementById('listSwitcherPopover').style.display = 'none';
+            const input = document.getElementById('newTemplateNameInput');
+            input.value = '';
+            renderTemplatesEditorList();
+            document.getElementById('templatesModal').style.display = 'flex';
+            if (focusInput) {
+                setTimeout(() => input.focus(), 80);
+            }
+        }
+
+        function closeTemplatesModal() {
+            document.getElementById('templatesModal').style.display = 'none';
+        }
+
+        function renderTemplatesEditorList() {
+            const listEl = document.getElementById('templatesEditorList');
+            listEl.innerHTML = '';
+
+            // Always show Current List at the top
+            const curRow = document.createElement('div');
+            curRow.className = 'section-edit-row';
+            curRow.innerHTML = `
+                <div class="section-edit-name" onclick="closeTemplatesModal(); switchToList('current');">
+                    <div style="font-weight: 700; color: var(--accent-color);">Current List ${activeListId === 'current' ? '•' : ''}</div>
+                    <div class="section-edit-sub">${currentItems.length} item${currentItems.length === 1 ? '' : 's'} (Saved)</div>
+                </div>
+                <div class="section-edit-actions">
+                    <button type="button" class="sec-mini-btn" onclick="closeTemplatesModal(); switchToList('current');">Open</button>
+                </div>
+            `;
+            listEl.appendChild(curRow);
+
+            if (savedTemplates.length === 0) {
+                const empty = document.createElement('div');
+                empty.style.cssText = 'padding: 18px 8px; text-align: center; font-size: 13px; color: var(--text-muted); font-style: italic;';
+                empty.innerText = 'No saved templates yet. Enter a name above and tap Create.';
+                listEl.appendChild(empty);
+                return;
+            }
+
+            savedTemplates.forEach((tpl, idx) => {
+                const row = document.createElement('div');
+                row.className = 'section-edit-row';
+                row.innerHTML = `
+                    <div class="section-edit-name" onclick="closeTemplatesModal(); switchToList('${tpl.id}');">
+                        <div>${escapeHtml(tpl.name)} ${activeListId === tpl.id ? '•' : ''}</div>
+                        <div class="section-edit-sub">${tpl.items.length} item${tpl.items.length === 1 ? '' : 's'}</div>
+                    </div>
+                    <div class="section-edit-actions">
+                        <button type="button" class="sec-mini-btn accent" onclick="applyTemplateToCurrentList('${tpl.id}')" title="Add items to Current List">+ Use</button>
+                        <button type="button" class="sec-mini-btn" onclick="closeTemplatesModal(); switchToList('${tpl.id}');" title="Edit items">Edit</button>
+                        <button type="button" class="sec-mini-btn" onclick="renameTemplate(${idx})" title="Rename">✎</button>
+                        <button type="button" class="sec-mini-btn danger" onclick="deleteTemplate(${idx})" title="Delete">✕</button>
+                    </div>
+                `;
+                listEl.appendChild(row);
+            });
+        }
+
+        function createNewTemplate() {
+            const input = document.getElementById('newTemplateNameInput');
+            const rawName = input.value.trim();
+            if (!rawName) return;
+
+            if (rawName.toLowerCase() === "current list") {
+                alert('"Current List" is reserved for your main list. Please choose another template name.');
+                return;
+            }
+
+            const exists = savedTemplates.some(t => t.name.toLowerCase() === rawName.toLowerCase());
+            if (exists) {
+                alert("A template with that name already exists.");
+                return;
+            }
+
+            const newTpl = {
+                id: 'tpl-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+                name: rawName,
+                items: []
+            };
+
+            savedTemplates.push(newTpl);
+            saveTemplatesToLocal();
+            scheduleTemplateSync(`Create template ${rawName}`);
+
+            input.value = '';
+            closeTemplatesModal();
+            switchToList(newTpl.id);
+            showAiStatus(`✓ Created template "${rawName}"`);
+        }
+
+        function renameTemplate(index) {
+            const tpl = savedTemplates[index];
+            if (!tpl) return;
+
+            const newName = prompt("Rename template:", tpl.name);
+            if (!newName || !newName.trim() || newName.trim() === tpl.name) return;
+
+            const cleanNew = newName.trim();
+            if (cleanNew.toLowerCase() === "current list") {
+                alert('"Current List" is reserved for your main list.');
+                return;
+            }
+            if (savedTemplates.some((t, i) => i !== index && t.name.toLowerCase() === cleanNew.toLowerCase())) {
+                alert("A template with that name already exists.");
+                return;
+            }
+
+            tpl.name = cleanNew;
+            saveTemplatesToLocal();
+            scheduleTemplateSync(`Rename template to ${cleanNew}`);
+            updateHeaderTitleUI();
+            renderTemplatesEditorList();
+        }
+
+        function deleteTemplate(index) {
+            const tpl = savedTemplates[index];
+            if (!tpl) return;
+
+            if (!confirm(`Delete template "${tpl.name}"?`)) return;
+
+            const deletedId = tpl.id;
+            savedTemplates.splice(index, 1);
+            saveTemplatesToLocal();
+            scheduleTemplateSync(`Delete template ${tpl.name}`);
+
+            if (activeListId === deletedId) {
+                switchToList("current");
+            }
+            renderTemplatesEditorList();
+        }
+
+        function applyActiveTemplateToCurrentList() {
+            if (activeListId === "current") return;
+            applyTemplateToCurrentList(activeListId);
+        }
+
+        function applyTemplateToCurrentList(templateId) {
+            const tpl = savedTemplates.find(t => t.id === templateId);
+            if (!tpl) return;
+
+            if (tpl.items.length === 0) {
+                showAiStatus(`"${tpl.name}" has no items yet`);
+                return;
+            }
+
+            closeTemplatesModal();
+
+            // Switch to Current List first so undo snapshot targets Current List cleanly
+            activeListId = "current";
+            updateHeaderTitleUI();
+            pushUndoSnapshot();
+
+            let addedCount = 0;
+            tpl.items.forEach(tplItem => {
+                const existing = currentItems.find(
+                    i => !i.completed && i.name.toLowerCase() === tplItem.name.toLowerCase() && i.section === tplItem.section
+                );
+                if (existing) {
+                    existing.quantity = (existing.quantity || 1) + (tplItem.quantity || 1);
+                } else {
+                    currentItems.push({
+                        id: 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+                        name: tplItem.name,
+                        quantity: tplItem.quantity || 1,
+                        completed: false,
+                        section: tplItem.section || "Others"
+                    });
+                }
+                addedCount++;
+            });
+
+            saveCurrentListToLocal();
+            renderList();
+            scheduleSync(`Added ${addedCount} items from template ${tpl.name}`);
+            showAiStatus(`✓ Added "${tpl.name}" to Current List`);
+        }
 
         function populateQtyDropdown() {
             const editSelect = document.getElementById('editItemQty');
@@ -1072,6 +1704,7 @@
 
         function togglePopoverMenu(e) {
             e.stopPropagation();
+            document.getElementById('listSwitcherPopover').style.display = 'none';
             const menu = document.getElementById('popoverMenu');
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         }
@@ -1090,17 +1723,19 @@
 
         function clearCompletedItems() {
             document.getElementById('popoverMenu').style.display = 'none';
-            const completedCount = currentItems.filter(i => i.completed).length;
+            const items = getActiveItems();
+            const completedCount = items.filter(i => i.completed).length;
             if (completedCount === 0) {
                 showAiStatus("No completed items to clear");
                 return;
             }
             if (confirm(`Clear ${completedCount} completed item${completedCount > 1 ? 's' : ''}?`)) {
-                currentItems = currentItems.filter(i => !i.completed);
+                pushUndoSnapshot();
+                setActiveItems(items.filter(i => !i.completed));
                 pendingMoveIds.clear();
                 selectedItemIds.clear();
                 renderList();
-                scheduleSync(`Cleared ${completedCount} completed items`);
+                persistActiveList(`Cleared ${completedCount} completed items`);
             }
         }
 
@@ -1193,12 +1828,20 @@
                     updatedItems = true;
                 }
             });
+            savedTemplates.forEach(tpl => {
+                tpl.items.forEach(item => {
+                    if (item.section === oldName) item.section = cleanNew;
+                });
+            });
 
             saveSectionsList();
+            saveCurrentListToLocal();
+            saveTemplatesToLocal();
             renderSectionsEditorList();
             if (updatedItems) {
                 scheduleSync(`Renamed section ${oldName} to ${cleanNew}`);
             }
+            scheduleTemplateSync(`Renamed section ${oldName} to ${cleanNew}`);
         }
 
         function deleteSection(index) {
@@ -1216,12 +1859,20 @@
                     movedItems = true;
                 }
             });
+            savedTemplates.forEach(tpl => {
+                tpl.items.forEach(item => {
+                    if (item.section === secName) item.section = "Others";
+                });
+            });
 
             saveSectionsList();
+            saveCurrentListToLocal();
+            saveTemplatesToLocal();
             renderSectionsEditorList();
             if (movedItems) {
                 scheduleSync(`Deleted section ${secName}`);
             }
+            scheduleTemplateSync(`Deleted section ${secName}`);
         }
 
         /* --- Select Mode (Shift-Click Select & Deselect + Mobile Circle-Column Drag Selection) --- */
@@ -1231,6 +1882,7 @@
             lastSelectedItemId = null;
             lastSelectionAction = 'select';
             document.getElementById('popoverMenu').style.display = 'none';
+            document.getElementById('listSwitcherPopover').style.display = 'none';
             document.getElementById('sectionPickerPopover').style.display = 'none';
 
             const titleEl = document.getElementById('mainTitle');
@@ -1238,18 +1890,20 @@
             const finishBtn = document.getElementById('finishSelectBtn');
             const bottomBar = document.getElementById('bottomActionBar');
             const fab = document.getElementById('fabBtn');
+            const banner = document.getElementById('templateBanner');
 
             if (isSelectMode) {
                 document.body.classList.add('select-mode');
                 titleEl.innerText = "Select Reminders";
                 pillEl.style.display = 'none';
+                if (banner) banner.style.display = 'none';
                 finishBtn.style.display = 'flex';
                 bottomBar.style.display = 'flex';
                 fab.style.opacity = '0';
                 fab.style.pointerEvents = 'none';
             } else {
                 document.body.classList.remove('select-mode');
-                titleEl.innerText = "Groceries";
+                updateHeaderTitleUI();
                 pillEl.style.display = 'flex';
                 finishBtn.style.display = 'none';
                 bottomBar.style.display = 'none';
@@ -1417,7 +2071,8 @@
             const btnMove = document.getElementById('btnMoveSection');
             const btnDelete = document.getElementById('btnDeleteSelected');
 
-            const selectedList = currentItems.filter(i => selectedItemIds.has(i.id));
+            const items = getActiveItems();
+            const selectedList = items.filter(i => selectedItemIds.has(i.id));
 
             if (selectedList.length === 0) {
                 btnComplete.disabled = true;
@@ -1439,30 +2094,36 @@
 
         function completeSelectedItems() {
             if (selectedItemIds.size === 0) return;
-            currentItems.forEach(i => {
+            pushUndoSnapshot();
+            const items = getActiveItems();
+            items.forEach(i => {
                 if (selectedItemIds.has(i.id)) i.completed = true;
             });
             pendingMoveIds.clear();
             renderList();
             updateSelectionBarState();
-            scheduleSync("Completed selected items");
+            persistActiveList("Completed selected items");
         }
 
         function uncompleteSelectedItems() {
             if (selectedItemIds.size === 0) return;
-            currentItems.forEach(i => {
+            pushUndoSnapshot();
+            const items = getActiveItems();
+            items.forEach(i => {
                 if (selectedItemIds.has(i.id)) i.completed = false;
             });
             pendingMoveIds.clear();
             renderList();
             updateSelectionBarState();
-            scheduleSync("Uncompleted selected items");
+            persistActiveList("Uncompleted selected items");
         }
 
         function deleteSelectedItems() {
             if (selectedItemIds.size === 0) return;
+            pushUndoSnapshot();
+            const items = getActiveItems();
             const count = selectedItemIds.size;
-            currentItems = currentItems.filter(i => !selectedItemIds.has(i.id));
+            setActiveItems(items.filter(i => !selectedItemIds.has(i.id)));
             selectedItemIds.clear();
             lastSelectedItemId = null;
             
@@ -1471,7 +2132,7 @@
 
             renderList();
             updateSelectionBarState();
-            scheduleSync(`Deleted ${count} items`);
+            persistActiveList(`Deleted ${count} items`);
         }
 
         function toggleSectionPickerPopover(e) {
@@ -1483,8 +2144,10 @@
 
         function moveSelectedToSection(sectionName) {
             document.getElementById('sectionPickerPopover').style.display = 'none';
+            pushUndoSnapshot();
+            const items = getActiveItems();
             let lastMovedName = "";
-            currentItems.forEach(i => {
+            items.forEach(i => {
                 if (selectedItemIds.has(i.id)) {
                     i.section = sectionName;
                     saveLearnedCategory(i.name, sectionName);
@@ -1495,20 +2158,20 @@
                 showAiStatus(`🧠 Learned: "${lastMovedName}" → ${sectionName}`);
             }
             renderList();
-            scheduleSync(`Moved items to ${sectionName}`);
+            persistActiveList(`Moved items to ${sectionName}`);
         }
 
         function shareShoppingList() {
             document.getElementById('popoverMenu').style.display = 'none';
             if (navigator.share) {
                 navigator.share({
-                    title: 'Groceries List',
-                    text: 'Check out my groceries list!',
+                    title: getActiveListDisplayName(),
+                    text: `Check out my ${getActiveListDisplayName()}!`,
                     url: window.location.href
                 }).catch(() => {});
             } else {
                 navigator.clipboard.writeText(window.location.href);
-                alert("Groceries list URL copied to clipboard!");
+                alert("List URL copied to clipboard!");
             }
         }
 
@@ -1552,7 +2215,10 @@
                         currentSha = fileData.sha;
                         const rawContent = decodeContent(fileData.content);
                         currentItems = parseFileContent(rawContent);
-                        renderList();
+                        saveCurrentListToLocal();
+                        if (activeListId === "current") {
+                            renderList();
+                        }
                     }
                 }
             } catch (err) { }
@@ -1572,6 +2238,7 @@
                     currentSha = fileData.sha;
                     const rawContent = decodeContent(fileData.content);
                     currentItems = parseFileContent(rawContent);
+                    saveCurrentListToLocal();
                 } else if (getRes.status === 404) {
                     currentItems = [];
                     currentSha = "";
@@ -1579,8 +2246,39 @@
                 renderList();
             } catch (err) {
                 console.error(err);
-                document.getElementById('loadingText').innerText = "Failed to load list.";
+                const loadingEl = document.getElementById('loadingText');
+                if (loadingEl) loadingEl.innerText = "Failed to load list.";
                 statusDiv.innerText = "Error syncing with GitHub.";
+            }
+        }
+
+        async function fetchTemplatesFromGitHub() {
+            try {
+                const res = await fetch(`${templatesApiUrl}?t=${Date.now()}`, {
+                    headers: { "Authorization": `Bearer ${PERSONAL_ACCESS_TOKEN}` }
+                });
+                if (res.ok) {
+                    const fileData = await res.json();
+                    templatesSha = fileData.sha;
+                    const raw = decodeContent(fileData.content);
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed)) {
+                        savedTemplates = parsed.map(t => ({
+                            id: t.id || ('tpl-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4)),
+                            name: t.name || "Untitled Template",
+                            items: parseFileContent(JSON.stringify(t.items || []))
+                        }));
+                        saveTemplatesToLocal();
+                        if (activeListId !== "current") {
+                            updateHeaderTitleUI();
+                            renderList();
+                        }
+                    }
+                } else if (res.status === 404) {
+                    templatesSha = "";
+                }
+            } catch (err) {
+                console.log("Using locally cached templates.");
             }
         }
 
@@ -1679,6 +2377,70 @@
             }
         }
 
+        let lastTemplateCommitMsg = "Update templates";
+        function scheduleTemplateSync(commitMessage = "Update templates") {
+            lastTemplateCommitMsg = commitMessage;
+            const statusDiv = document.getElementById('status');
+            if (activeListId !== "current") statusDiv.innerText = "Saving template...";
+
+            if (templateSyncTimer) clearTimeout(templateSyncTimer);
+            templateSyncTimer = setTimeout(() => { processTemplateSyncQueue(); }, 200);
+        }
+
+        async function processTemplateSyncQueue() {
+            if (isTemplateSyncing) { templateSyncPending = true; return; }
+            if (!PERSONAL_ACCESS_TOKEN) return;
+
+            isTemplateSyncing = true;
+            templateSyncPending = false;
+            const statusDiv = document.getElementById('status');
+
+            try {
+                if (!templatesSha) {
+                    const getRes = await fetch(`${templatesApiUrl}?t=${Date.now()}`, {
+                        headers: { "Authorization": `Bearer ${PERSONAL_ACCESS_TOKEN}` }
+                    });
+                    if (getRes.ok) {
+                        const fileData = await getRes.json();
+                        templatesSha = fileData.sha;
+                    }
+                }
+
+                const encodedContent = encodeContent(JSON.stringify(savedTemplates, null, 2));
+                const payload = { message: lastTemplateCommitMsg, content: encodedContent };
+                if (templatesSha) payload.sha = templatesSha;
+
+                const putRes = await fetch(templatesApiUrl, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `Bearer ${PERSONAL_ACCESS_TOKEN}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (putRes.ok) {
+                    const resData = await putRes.json();
+                    templatesSha = resData.content.sha;
+                    if (activeListId !== "current") {
+                        statusDiv.innerText = "✓ Template saved";
+                        setTimeout(() => { if (statusDiv.innerText === "✓ Template saved") statusDiv.innerText = ""; }, 2000);
+                    }
+                } else if (putRes.status === 409 || putRes.status === 422) {
+                    templatesSha = "";
+                    templateSyncPending = true;
+                }
+            } catch (err) {
+                console.error("Template sync error:", err);
+            } finally {
+                isTemplateSyncing = false;
+                if (templateSyncPending) {
+                    templateSyncPending = false;
+                    processTemplateSyncQueue();
+                }
+            }
+        }
+
         function buildItemRow(item, isCompletedSection = false) {
             const qtyVal = item.quantity || 1;
             const isCompleted = isCompletedSection || item.completed;
@@ -1733,7 +2495,7 @@
         function buildQuickAddRow(sectionName) {
             const row = document.createElement('div');
             row.className = 'quick-add-row';
-            row.dataset.section = sectionName;
+            row.dataset.section = sectionName || "";
 
             const circle = document.createElement('div');
             circle.className = 'dotted-circle';
@@ -1742,19 +2504,30 @@
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'quick-add-input';
-            input.placeholder = 'New item';
-            input.dataset.section = sectionName;
-            input.setAttribute('aria-label', `Add item to ${sectionName}`);
+            input.placeholder = '';
+            input.dataset.section = sectionName || "";
+            input.setAttribute('aria-label', sectionName ? `Add item to ${sectionName}` : 'Add item');
 
-            circle.onclick = () => input.focus();
+            // Clicking anywhere on the dotted circle or row immediately focuses input
+            row.onclick = () => input.focus();
 
             let submitted = false;
-            const handleQuickSubmit = (keepFocus) => {
+            const handleQuickSubmit = async (keepFocus) => {
                 if (submitted) return;
                 const val = input.value.trim();
                 if (!val) return;
                 submitted = true;
-                addItemDirectlyToSection(val, sectionName, keepFocus);
+                if (sectionName) {
+                    addItemDirectlyToSection(val, sectionName, keepFocus);
+                } else {
+                    await addItem(val);
+                    if (keepFocus) {
+                        setTimeout(() => {
+                            const firstQuick = document.querySelector('.quick-add-input');
+                            if (firstQuick) firstQuick.focus();
+                        }, 20);
+                    }
+                }
             };
 
             input.onkeydown = (e) => {
@@ -1777,6 +2550,8 @@
             const parsed = parseItemInput(rawName);
             if (!parsed.name) return;
 
+            pushUndoSnapshot();
+
             const newItem = {
                 id: 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
                 name: parsed.name,
@@ -1784,10 +2559,11 @@
                 completed: false,
                 section: sectionName
             };
-            currentItems.push(newItem);
+            const items = getActiveItems();
+            items.push(newItem);
             saveLearnedCategory(parsed.name, sectionName);
             renderList();
-            scheduleSync(`Add ${newItem.name} to ${sectionName}`);
+            persistActiveList(`Add ${newItem.name} to ${sectionName}`);
 
             if (refocusInput) {
                 setTimeout(() => {
@@ -1802,11 +2578,18 @@
             const container = document.getElementById('listContainer');
             container.innerHTML = "";
 
-            const activeItems = currentItems.filter(i => !i.completed || pendingMoveIds.has(i.id));
-            const completedItems = currentItems.filter(i => i.completed && !pendingMoveIds.has(i.id));
+            const items = getActiveItems();
+            const activeItems = items.filter(i => !i.completed || pendingMoveIds.has(i.id));
+            const completedItems = items.filter(i => i.completed && !pendingMoveIds.has(i.id));
 
-            if (currentItems.length === 0) {
-                container.innerHTML = '<div class="empty-state">Your groceries list is empty.</div>';
+            if (items.length === 0) {
+                const emptyLabel = activeListId === "current"
+                    ? "Your groceries list is empty."
+                    : "This template is empty.";
+                container.innerHTML = `<div class="empty-state">${emptyLabel}</div>`;
+                if (!isSelectMode) {
+                    container.appendChild(buildQuickAddRow(null));
+                }
                 return;
             }
 
@@ -1858,14 +2641,17 @@
         }
 
         function toggleItem(id) {
-            const item = currentItems.find(i => i.id === id);
+            const items = getActiveItems();
+            const item = items.find(i => i.id === id);
             if (!item) return;
+
+            pushUndoSnapshot();
 
             if (!item.completed) {
                 item.completed = true;
                 pendingMoveIds.add(id);
                 renderList();
-                scheduleSync(`Toggle ${item.name}`);
+                persistActiveList(`Toggle ${item.name}`);
 
                 if (batchMoveTimer) clearTimeout(batchMoveTimer);
                 batchMoveTimer = setTimeout(() => {
@@ -1877,7 +2663,7 @@
                 pendingMoveIds.delete(id);
                 item.completed = false;
                 renderList();
-                scheduleSync(`Toggle ${item.name}`);
+                persistActiveList(`Toggle ${item.name}`);
             }
         }
 
@@ -1960,7 +2746,6 @@
             dragGhostEl.style.transform = `translate3d(0, 0, 0) scale(1.02)`;
             document.body.appendChild(dragGhostEl);
 
-            // Disable transition on ghost during active pointer movement so finger tracking is 1:1
             requestAnimationFrame(() => {
                 if (dragGhostEl) dragGhostEl.style.transition = 'box-shadow 0.15s ease';
             });
@@ -1991,11 +2776,11 @@
 
                 isDragging = false;
 
-                // Compute final reordered list & section assignment
                 const reorderedNodes = [...dragFlowNodes];
                 const [movedNode] = reorderedNodes.splice(draggedFlowIdx, 1);
                 reorderedNodes.splice(targetFlowIdx, 0, movedNode);
 
+                const items = getActiveItems();
                 let currentSec = ALL_SECTIONS[0];
                 const newActiveOrder = [];
                 let updatedSectionName = null;
@@ -2004,7 +2789,7 @@
                     if (node.type === 'header') {
                         currentSec = node.section;
                     } else if (node.type === 'item') {
-                        const itemObj = currentItems.find(i => i.id === node.id);
+                        const itemObj = items.find(i => i.id === node.id);
                         if (itemObj) {
                             if (itemObj.id === activeDragId && itemObj.section !== currentSec) {
                                 itemObj.section = currentSec;
@@ -2016,20 +2801,20 @@
                     }
                 });
 
-                const completedItems = currentItems.filter(i => i.completed && !pendingMoveIds.has(i.id));
+                const completedItems = items.filter(i => i.completed && !pendingMoveIds.has(i.id));
                 const didChange = draggedFlowIdx !== targetFlowIdx;
 
                 if (didChange) {
-                    currentItems = [...newActiveOrder, ...completedItems];
+                    pushUndoSnapshot();
+                    setActiveItems([...newActiveOrder, ...completedItems]);
                     if (updatedSectionName) {
                         showAiStatus(`🧠 Moved to ${updatedSectionName}`);
-                        scheduleSync(`Moved item to ${updatedSectionName}`);
+                        persistActiveList(`Moved item to ${updatedSectionName}`);
                     } else {
-                        scheduleSync("Reordered groceries list");
+                        persistActiveList("Reordered list");
                     }
                 }
 
-                // Smoothly settle ghost card into final slot before re-rendering
                 const finalSlotNode = dragFlowNodes[targetFlowIdx];
                 if (dragGhostEl && finalSlotNode) {
                     const targetY = finalSlotNode.top - sourceRect.top;
@@ -2068,7 +2853,6 @@
             const dy = currentClientY - startClientY;
             dragGhostEl.style.transform = `translate3d(0, ${dy}px, 0) scale(1.02)`;
 
-            // Find target flow index (minimum 1 so it stays below the first section header)
             let newTargetIdx = draggedFlowIdx;
             if (currentClientY <= dragFlowNodes[1]?.top) {
                 newTargetIdx = 1;
@@ -2102,7 +2886,8 @@
         }
 
         function openEditModal(id, focusQty = false) {
-            const item = currentItems.find(i => i.id === id);
+            const items = getActiveItems();
+            const item = items.find(i => i.id === id);
             if (!item) return;
 
             editingItemId = id;
@@ -2133,7 +2918,8 @@
 
         async function saveEditedItem() {
             if (!editingItemId) return;
-            const item = currentItems.find(i => i.id === editingItemId);
+            const items = getActiveItems();
+            const item = items.find(i => i.id === editingItemId);
             if (!item) return;
 
             const newName = formatItemName(document.getElementById('editItemName').value);
@@ -2142,11 +2928,12 @@
             closeEditModal();
 
             if (newName) {
+                pushUndoSnapshot();
                 item.name = newName;
                 item.quantity = newQty;
                 item.section = await categorizeItemName(newName);
                 renderList();
-                scheduleSync(`Edit ${item.name}`);
+                persistActiveList(`Edit ${item.name}`);
             }
         }
 
@@ -2158,6 +2945,8 @@
             const parsed = parseItemInput(rawName);
             if (!parsed.name) return;
 
+            pushUndoSnapshot();
+
             const finalQty = (explicitQty !== null && !isNaN(explicitQty)) ? explicitQty : parsed.quantity;
             const assignedSection = await categorizeItemName(parsed.name);
 
@@ -2168,19 +2957,22 @@
                 completed: false,
                 section: assignedSection
             };
-            currentItems.push(newItem);
+            const items = getActiveItems();
+            items.push(newItem);
             renderList();
-            scheduleSync(`Add ${newItem.name} x${newItem.quantity}`);
+            persistActiveList(`Add ${newItem.name} x${newItem.quantity}`);
         }
 
         function deleteSingleItem(id) {
-            const item = currentItems.find(i => i.id === id);
+            const items = getActiveItems();
+            const item = items.find(i => i.id === id);
             if (!item) return;
 
+            pushUndoSnapshot();
             pendingMoveIds.delete(id);
-            currentItems = currentItems.filter(i => i.id !== id);
+            setActiveItems(items.filter(i => i.id !== id));
             renderList();
-            scheduleSync(`Remove ${item.name}`);
+            persistActiveList(`Remove ${item.name}`);
         }
 
         function openModal() {
