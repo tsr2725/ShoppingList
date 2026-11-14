@@ -26,12 +26,5 @@
     "quantity": 1,
     "completed": false,
     "section": "Dairy, Eggs and Cheese"
-  },
-  {
-    "id": "id-1794690872226-gm3zg",
-    "name": "B",
-    "quantity": 1,
-    "completed": false,
-    "section": "Breads and Cereals"
   }
 ]
